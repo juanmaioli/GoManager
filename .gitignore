@@ -1,0 +1,7 @@
+.dev/
+GEMINI.md
+.env
+data_www/.env
+*.sqlite
+data_www/db/*.sqlite
+data_db/

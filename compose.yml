@@ -1,0 +1,19 @@
+services:
+  gomanager_web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gomanager_web:latest
+    container_name: goManager_web
+    restart: always
+    volumes:
+      - ./data_www:/var/www/html
+      - ./data_apache:/etc/apache2
+      - ./data_php/php.ini:/usr/local/etc/php/php.ini
+    ports:
+      - "8090:443"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
