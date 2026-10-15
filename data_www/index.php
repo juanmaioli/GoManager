@@ -65,7 +65,14 @@ foreach ($servidores as $srv) {
 
 <?php require_once __DIR__ . '/includes/navbar.php'; ?>
 
-<main class="container-fluid px-4 pb-5">
+<main class="container-fluid px-3 px-md-4 py-4 app-main">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h2 fw-bold text-light mb-1">📊 Panel Principal</h1>
+            <p class="text-secondary mb-0">Estado general y métricas de los servidores monitoreados.</p>
+        </div>
+    </div>
+
     <!-- Métricas Globales -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">

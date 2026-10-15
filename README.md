@@ -14,6 +14,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 
 ## ✨ Características Principales
 
+- 🧭 **Menú Lateral Responsivo (Sidebar):** Navegación fija en el lateral izquierdo, compacta y accesible, con transición a menú desplegable tipo *offcanvas* en dispositivos móviles y tablets.
 - 🖥️ **Dashboard en Tiempo Real:** Tarjetas individuales por servidor con estado online/error, barras de uso de CPU, RAM, espacio libre en disco y Uptime formateado.
 - 🔑 **Autenticación Dual SSH:** Soporte para autenticación mediante **clave privada** (RSA, Ed25519, PEM) o **usuario y contraseña** (`sshpass`).
 - 🔍 **Detalle Técnico Exhaustivo:** Vista profunda de cada equipo con métricas de procesador (cores, velocidad), memoria, tarjetas gráficas (GPU/VRAM), tablas de almacenamiento particionado e interfaces de red activas con sus direcciones IP y MAC.
@@ -30,7 +31,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 | :--- | :--- |
 | **Backend** | PHP 8.3 (Apache, PDO SQLite, GD, OpenSSL, OpenSSH, SSHPass) |
 | **Base de Datos** | SQLite 3 |
-| **Frontend** | Bootstrap 5.3 (Modo Oscuro, Accesible) + JavaScript Fetch API |
+| **Frontend** | Bootstrap 5.3 (Modo Oscuro, Sidebar Accesible Offcanvas) + JavaScript Fetch API |
 | **Infraestructura** | Docker & Docker Compose v2 |
 | **Cliente de Métricas** | Binario `gosvrinfo` (Go) |
 
@@ -77,7 +78,7 @@ Abrí el navegador e ingresá en:
     │   ├── db.php              # Conexión SQLite y esquema de tablas
     │   ├── ssh.php             # Conector SSH para ejecución remota
     │   ├── helpers.php         # Funciones auxiliares y formateadores
-    │   └── navbar.php          # Barra de navegación accesible
+    │   └── navbar.php          # Menú lateral accesible (Sidebar con offcanvas móvil)
     ├── db/                     # Almacenamiento protegido de database.sqlite
     └── clientes/               # Binarios compilados de gosvrinfo (amd64 / arm64)
 ```
