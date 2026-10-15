@@ -53,6 +53,9 @@ $cpuVal = $data['cpu_usage'] ?? '0%';
 $ramVal = $data['ram_usage'] ?? '0%';
 $cpuNum = (float)str_replace(['%', ' '], '', (string)$cpuVal);
 $ramNum = (float)str_replace(['%', ' '], '', (string)$ramVal);
+
+$soNombre = $data['operating_system']['name'] ?? '';
+$iconoSO = iconoDistroSO($soNombre);
 ?>
 <!DOCTYPE html>
 <html lang="es" data-bs-theme="dark">
@@ -61,15 +64,19 @@ $ramNum = (float)str_replace(['%', ' '], '', (string)$ramVal);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($servidor['nombre']) ?> - Detalle - GoManager SvrInfo</title>
     <link rel="icon" href='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>'>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+    </script>
     <link href="./css/bootstrap.min.css" rel="stylesheet">
     <link href="./css/bootstrap-color-extension.css" rel="stylesheet">
     <link href="./css/all.css" rel="stylesheet">
+    <link href="./css/styles.css" rel="stylesheet">
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-size: 1.05rem; }
-        .card { background-color: #161b22; border-color: #30363d; }
-        .table { --bs-table-bg: #161b22; --bs-table-color: #c9d1d9; border-color: #30363d; }
-        .progress { background-color: #21262d; height: 22px; border-radius: 6px; }
-        pre.json-viewer { background-color: #0d1117; color: #79c0ff; border: 1px solid #30363d; border-radius: 6px; padding: 1rem; max-height: 400px; }
+        .progress { height: 22px; border-radius: 6px; }
+        pre.json-viewer { max-height: 400px; padding: 1rem; border-radius: 6px; border: 1px solid var(--border-color); }
     </style>
 </head>
 <body>
@@ -82,7 +89,7 @@ $ramNum = (float)str_replace(['%', ' '], '', (string)$ramVal);
         <div>
             <a href="index.php" class="btn btn-outline-secondary btn-sm mb-2"><i class="fa-light fa-arrow-left me-1"></i>Volver al Dashboard</a>
             <h1 class="h2 fw-bold text-light mb-0">
-                <i class="fa-light fa-server text-primary me-2"></i><?= e($servidor['nombre']) ?> 
+                <i class="<?= $iconoSO ?> me-2"></i><?= e($servidor['nombre']) ?> 
                 <span class="badge bg-<?= $servidor['ultimo_estado'] === 'online' ? 'success' : 'danger' ?> fs-6 ms-2">
                     <?= strtoupper(e($servidor['ultimo_estado'])) ?>
                 </span>
@@ -139,7 +146,7 @@ $ramNum = (float)str_replace(['%', ' '], '', (string)$ramVal);
         <!-- Sistema y Uptime -->
         <div class="col-md-4">
             <div class="card p-3 shadow-sm h-100">
-                <div class="fw-bold fs-5 text-light mb-2"><i class="fa-brands fa-linux me-2 text-info"></i>Sistema Operativo</div>
+                <div class="fw-bold fs-5 text-light mb-2"><i class="<?= $iconoSO ?> me-2"></i>Sistema Operativo</div>
                 <div class="fs-4 fw-bold text-info mb-2">
                     <i class="fa-light fa-clock me-1"></i><?= formatearUptime($data['system_uptime'] ?? $servidor['uptime']) ?>
                 </div>
@@ -294,6 +301,7 @@ $ramNum = (float)str_replace(['%', ' '], '', (string)$ramVal);
 </main>
 
 <script src="./js/bootstrap.bundle.min.js"></script>
+<script src="./js/app.js"></script>
 <script>
 function sincronizarTodos() {
     window.location.href = 'index.php?sync_all=1';

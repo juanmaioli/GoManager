@@ -70,3 +70,59 @@ function guardarMetricas(PDO $pdo, int $servidorId, array $datos, string $rawJso
     ");
     $stmtUpd->execute([':id' => $servidorId]);
 }
+
+/**
+ * Retorna la clase de icono FontAwesome de la distribución de Linux / SO.
+ * Si no se encuentra una distro específica, usa por defecto fa-brands fa-linux.
+ */
+function iconoDistroSO(?string $nombreSO): string
+{
+    if (empty($nombreSO)) {
+        return 'fa-brands fa-linux';
+    }
+
+    $so = strtolower($nombreSO);
+
+    if (str_contains($so, 'debian')) {
+        return 'fa-brands fa-debian';
+    }
+    if (str_contains($so, 'ubuntu')) {
+        return 'fa-brands fa-ubuntu';
+    }
+    if (str_contains($so, 'fedora')) {
+        return 'fa-brands fa-fedora';
+    }
+    if (str_contains($so, 'centos')) {
+        return 'fa-brands fa-centos';
+    }
+    if (str_contains($so, 'red hat') || str_contains($so, 'redhat') || str_contains($so, 'rhel')) {
+        return 'fa-brands fa-redhat';
+    }
+    if (str_contains($so, 'arch')) {
+        return 'fa-brands fa-arch-linux';
+    }
+    if (str_contains($so, 'suse')) {
+        return 'fa-brands fa-opensuse';
+    }
+    if (str_contains($so, 'raspberry') || str_contains($so, 'raspbian')) {
+        return 'fa-brands fa-raspberry-pi';
+    }
+    if (str_contains($so, 'freebsd')) {
+        return 'fa-brands fa-freebsd';
+    }
+    if (str_contains($so, 'android')) {
+        return 'fa-brands fa-android';
+    }
+    if (str_contains($so, 'windows')) {
+        return 'fa-brands fa-windows';
+    }
+    if (str_contains($so, 'apple') || str_contains($so, 'darwin') || str_contains($so, 'macos') || str_contains($so, 'mac os')) {
+        return 'fa-brands fa-apple';
+    }
+    if (str_contains($so, 'docker')) {
+        return 'fa-brands fa-docker';
+    }
+
+    return 'fa-brands fa-linux';
+}
+

@@ -18,8 +18,8 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
             height: 100vh !important;
             position: sticky !important;
             top: 0 !important;
-            background-color: #161b22 !important;
-            border-right: 1px solid #30363d !important;
+            background-color: var(--sidebar-bg, #161b22) !important;
+            border-right: 1px solid var(--sidebar-border, #30363d) !important;
             flex-shrink: 0;
             z-index: 1020;
         }
@@ -37,7 +37,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
     }
     @media (max-width: 991.98px) {
         .app-sidebar {
-            background-color: #161b22 !important;
+            background-color: var(--sidebar-bg, #161b22) !important;
             width: var(--sidebar-width) !important;
         }
         .app-sidebar .offcanvas-body {
@@ -47,7 +47,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
     .sidebar-link {
         font-size: 0.85rem;
         font-weight: 600;
-        color: #e6edf3;
+        color: var(--sidebar-link-color, #e6edf3);
         padding: 0.4rem 0.55rem;
         border-radius: 6px;
         display: flex;
@@ -59,7 +59,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
         white-space: nowrap;
     }
     .sidebar-link:hover, .sidebar-link:focus {
-        background-color: #21262d;
+        background-color: var(--sidebar-link-hover-bg, #21262d);
         color: #58a6ff;
         border-left-color: #58a6ff;
     }
@@ -95,29 +95,37 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
 </style>
 
 <!-- Barra superior para móviles y tablets (< 992px) -->
-<header class="navbar navbar-dark bg-dark border-bottom border-secondary d-lg-none px-3 py-2 sticky-top w-100" aria-label="Cabecera móvil">
+<header class="navbar border-bottom border-secondary-subtle bg-body-tertiary d-lg-none px-3 py-2 sticky-top w-100" aria-label="Cabecera móvil">
     <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-1 m-0 brand-title" href="index.php">
-        <i class="fa-light fa-bolt text-warning" aria-hidden="true"></i>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
+        <i class="fa-light fa-bolt" aria-hidden="true"></i>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
     </a>
-    <button class="navbar-toggler py-1 px-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-label="Abrir menú de navegación lateral">
-        <span class="navbar-toggler-icon" style="width: 1.2em; height: 1.2em;"></span>
-    </button>
+    <div class="d-flex align-items-center gap-2">
+        <!-- Selector de Tema Móvil -->
+        <div class="form-check form-switch d-flex align-items-center gap-1 border border-secondary-subtle px-2 py-1 rounded-pill bg-body shadow-sm m-0 cursor-pointer" title="Cambiar tema claro/oscuro" style="cursor: pointer;">
+            <span class="fs-7 select-none" aria-hidden="true" style="user-select: none;">☀️</span>
+            <input class="form-check-input ms-0 me-0" type="checkbox" id="theme-switch-mobile" role="switch" aria-label="Cambiar tema de la aplicación (claro u oscuro)" checked style="cursor: pointer;">
+            <span class="fs-7 select-none" aria-hidden="true" style="user-select: none;">🌙</span>
+        </div>
+        <button class="navbar-toggler py-1 px-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-label="Abrir menú de navegación lateral">
+            <span class="navbar-toggler-icon" style="width: 1.2em; height: 1.2em;"></span>
+        </button>
+    </div>
 </header>
 
 <!-- Menú lateral (Sidebar) accesible compacto -->
 <aside class="offcanvas-lg offcanvas-start app-sidebar" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
     <div class="offcanvas-header border-bottom border-secondary d-lg-none pb-2 mb-2">
         <h6 class="offcanvas-title fw-bold text-primary d-flex align-items-center gap-1 m-0 brand-title" id="sidebarMenuLabel">
-            <i class="fa-light fa-bolt text-warning" aria-hidden="true"></i>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
+            <i class="fa-light fa-bolt" aria-hidden="true"></i>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
         </h6>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Cerrar menú lateral"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Cerrar menú lateral"></button>
     </div>
 
     <div class="offcanvas-body d-flex flex-column h-100">
         <!-- Logo en escritorio -->
-        <div class="d-none d-lg-block pb-2 mb-2 border-bottom border-secondary">
+        <div class="d-none d-lg-block pb-2 mb-2 border-bottom border-secondary-subtle">
             <a class="text-decoration-none fw-bold text-primary d-flex align-items-center gap-1 brand-title" href="index.php">
-                <i class="fa-light fa-bolt text-warning" aria-hidden="true"></i>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
+                <i class="fa-light fa-bolt" aria-hidden="true"></i>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
             </a>
             <div class="text-secondary sidebar-subtitle mt-1">Panel de Control</div>
         </div>
@@ -148,7 +156,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
                 <?php endif; ?>
             </ul>
 
-            <hr class="border-secondary my-2">
+            <hr class="border-secondary-subtle my-2">
 
             <!-- Acciones Rápidas -->
             <div class="px-1">
@@ -163,11 +171,20 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
             </div>
         </nav>
 
+        <!-- Selector de Tema con Emojis en Sidebar -->
+        <div class="px-1 my-2">
+            <div class="form-check form-switch d-flex align-items-center justify-content-center gap-2 border border-secondary-subtle px-2 py-1 rounded-pill bg-body-tertiary shadow-sm m-0 cursor-pointer" title="Cambiar tema claro/oscuro" style="cursor: pointer;">
+                <span class="fs-7 select-none" aria-hidden="true" style="user-select: none;">☀️</span>
+                <input class="form-check-input ms-0 me-0" type="checkbox" id="theme-switch" role="switch" aria-label="Cambiar tema de la aplicación (claro u oscuro)" checked style="cursor: pointer;">
+                <span class="fs-7 select-none" aria-hidden="true" style="user-select: none;">🌙</span>
+            </div>
+        </div>
+
         <!-- Pie del Sidebar -->
-        <div class="pt-2 mt-auto border-top border-secondary text-secondary" style="font-size: 0.7rem;">
+        <div class="pt-2 mt-auto border-top border-secondary-subtle text-secondary" style="font-size: 0.7rem;">
             <div class="d-flex align-items-center justify-content-between">
                 <span>GoManager</span>
-                <span class="badge bg-dark border border-secondary text-secondary" style="font-size: 0.65rem;">v0.3.0</span>
+                <span class="badge bg-body-secondary border border-secondary-subtle text-body-secondary" style="font-size: 0.65rem;">v0.4.0</span>
             </div>
         </div>
     </div>

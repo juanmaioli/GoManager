@@ -1,0 +1,195 @@
+/* ==========================================================================
+   styles.css - Estilos adaptables y variables para switch-tema (Bootstrap 5.3)
+   ========================================================================== */
+
+/* Variables independientes del tema */
+:root {
+  --font-title: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --focus-ring-color: #38bdf8;
+  --focus-ring-width: 3px;
+  --sidebar-width: 175px;
+}
+
+/* Tema Oscuro (Predeterminado) */
+[data-bs-theme="dark"] {
+  --bg-gradient: linear-gradient(135deg, #12141c 0%, #1a1d29 100%);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --card-bg: rgba(26, 29, 41, 0.85);
+  --text-color: #e2e8f0;
+  --text-active-color: #ffffff;
+  
+  --transcription-bg: #090b11;
+  --transcription-border: rgba(255, 255, 255, 0.1);
+  --transcription-text-color: #f1f5f9;
+  
+  --shadow-intensity: rgba(0, 0, 0, 0.25);
+  --shadow-hover-intensity: rgba(0, 0, 0, 0.35);
+
+  --sidebar-bg: #161b22;
+  --sidebar-border: #30363d;
+  --sidebar-link-color: #e6edf3;
+  --sidebar-link-hover-bg: #21262d;
+  --progress-bg: #21262d;
+  --code-bg: #0d1117;
+  --code-color: #79c0ff;
+  --input-bg: #0d1117;
+  --input-border: #30363d;
+  --input-color: #f0f6fc;
+}
+
+/* Tema Claro */
+[data-bs-theme="light"] {
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --text-color: #334155;
+  --text-active-color: #0f172a;
+  
+  --transcription-bg: #ffffff;
+  --transcription-border: rgba(0, 0, 0, 0.1);
+  --transcription-text-color: #1e293b;
+  
+  --shadow-intensity: rgba(15, 23, 42, 0.06);
+  --shadow-hover-intensity: rgba(15, 23, 42, 0.1);
+
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e2e8f0;
+  --sidebar-link-color: #334155;
+  --sidebar-link-hover-bg: #f1f5f9;
+  --progress-bg: #e2e8f0;
+  --code-bg: #f8fafc;
+  --code-color: #0969da;
+  --input-bg: #ffffff;
+  --input-border: #d0d7de;
+  --input-color: #1f2328;
+}
+
+/* Aplicación de Variables Dinámicas */
+body {
+  font-family: var(--font-body);
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-color);
+  min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease; /* Suaviza el cambio */
+}
+
+/* Tarjetas premium con sombras suaves adaptativas */
+.card {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease-in-out;
+}
+
+.card-server:hover {
+  border-color: #58a6ff;
+}
+
+.card-premium {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px var(--shadow-intensity);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-premium:hover {
+  border-color: rgba(129, 140, 248, 0.4);
+  box-shadow: 0 15px 40px var(--shadow-hover-intensity);
+}
+
+/* Tablas adaptables */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+/* Barras de progreso */
+.progress {
+  background-color: var(--progress-bg);
+  transition: background-color 0.3s ease;
+}
+
+/* Visor JSON y Bloques de Código */
+pre.json-viewer, code {
+  background-color: var(--code-bg);
+  color: var(--code-color);
+  border-color: var(--border-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Formularios adaptables */
+.form-control, .form-select {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--input-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 0.25rem rgba(88, 166, 255, 0.25);
+}
+
+/* Adaptación del Sidebar */
+.app-sidebar {
+  background-color: var(--sidebar-bg) !important;
+  border-right-color: var(--sidebar-border) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.sidebar-link {
+  color: var(--sidebar-link-color);
+}
+
+.sidebar-link:hover, .sidebar-link:focus {
+  background-color: var(--sidebar-link-hover-bg);
+  color: #58a6ff;
+  border-left-color: #58a6ff;
+}
+
+/* Utilidades para accesibilidad del selector */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.select-none {
+  user-select: none;
+}
+
+.fs-7 {
+  font-size: 0.85rem;
+}
+
+/* Adaptaciones específicas para modo claro */
+[data-bs-theme="light"] .text-light {
+  color: var(--text-active-color) !important;
+}
+
+[data-bs-theme="light"] .border-secondary {
+  border-color: #d0d7de !important;
+}
+
+[data-bs-theme="light"] .border-secondary-subtle {
+  border-color: #d0d7de !important;
+}
+
+[data-bs-theme="light"] .table-dark {
+  --bs-table-bg: #f6f8fa;
+  --bs-table-color: #1f2328;
+  --bs-table-border-color: #d0d7de;
+}
+
+[data-bs-theme="light"] .btn-close-white {
+  filter: none;
+}
+
+[data-bs-theme="light"] .bg-dark {
+  background-color: #f6f8fa !important;
+  color: #1f2328 !important;
+}

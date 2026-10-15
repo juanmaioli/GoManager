@@ -89,8 +89,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Obtener lista de servidores
-$servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll();
+// Obtener lista de servidores con su última métrica para conocer el S.O.
+$query = "
+    SELECT s.*, m.raw_json
+    FROM servidores s
+    LEFT JOIN metricas m ON m.id = (
+        SELECT id FROM metricas WHERE servidor_id = s.id ORDER BY id DESC LIMIT 1
+    )
+    ORDER BY s.id DESC
+";
+$servidores = $pdo->query($query)->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="es" data-bs-theme="dark">
@@ -99,16 +107,18 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración de Servidores - GoManager SvrInfo</title>
     <link rel="icon" href='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>'>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+    </script>
     <link href="./css/bootstrap.min.css" rel="stylesheet">
     <link href="./css/bootstrap-color-extension.css" rel="stylesheet">
     <link href="./css/all.css" rel="stylesheet">
+    <link href="./css/styles.css" rel="stylesheet">
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-size: 1.05rem; }
-        .card { background-color: #161b22; border-color: #30363d; }
-        .table { --bs-table-bg: #161b22; --bs-table-color: #c9d1d9; border-color: #30363d; }
         .btn-action { font-size: 0.95rem; font-weight: 600; }
-        .form-control, .form-select { background-color: #0d1117; border-color: #30363d; color: #f0f6fc; }
-        .form-control:focus, .form-select:focus { border-color: #58a6ff; box-shadow: 0 0 0 0.25rem rgba(88, 166, 255, 0.25); }
     </style>
 </head>
 <body>
@@ -161,10 +171,15 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
                             </tr>
                         <?php else: ?>
                             <?php foreach ($servidores as $srv): ?>
+                                <?php 
+                                    $dataSrv = !empty($srv['raw_json']) ? json_decode($srv['raw_json'], true) : [];
+                                    $soNombre = $dataSrv['operating_system']['name'] ?? '';
+                                    $iconoSO = iconoDistroSO($soNombre);
+                                ?>
                                 <tr>
                                     <td class="ps-4 fw-bold text-light">
                                         <a href="servidor.php?id=<?= $srv['id'] ?>" class="text-decoration-none text-light hover-primary">
-                                            <i class="fa-light fa-server text-primary me-1"></i><?= e($srv['nombre']) ?>
+                                            <i class="<?= $iconoSO ?> me-2"></i><?= e($srv['nombre']) ?>
                                         </a>
                                     </td>
                                     <td><code><?= e($srv['host']) ?></code></td>
@@ -290,6 +305,7 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
 </div>
 
 <script src="./js/bootstrap.bundle.min.js"></script>
+<script src="./js/app.js"></script>
 <script>
 const modalEl = document.getElementById('modalServidor');
 const bsModal = new bootstrap.Modal(modalEl);
