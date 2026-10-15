@@ -51,7 +51,9 @@ foreach ($servidores as $srv) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - GoManager SvrInfo</title>
     <link rel="icon" href='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>'>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/bootstrap-color-extension.css" rel="stylesheet">
+    <link href="./css/all.css" rel="stylesheet">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-size: 1.05rem; }
         .card { background-color: #161b22; border-color: #30363d; transition: transform 0.15s ease-in-out; }
@@ -68,7 +70,7 @@ foreach ($servidores as $srv) {
 <main class="container-fluid px-3 px-md-4 py-4 app-main">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h1 class="h2 fw-bold text-light mb-1">📊 Panel Principal</h1>
+            <h1 class="h2 fw-bold text-light mb-1"><i class="fa-light fa-chart-line text-primary me-2"></i>Panel Principal</h1>
             <p class="text-secondary mb-0">Estado general y métricas de los servidores monitoreados.</p>
         </div>
     </div>
@@ -82,7 +84,7 @@ foreach ($servidores as $srv) {
                         <div class="text-secondary small fw-bold text-uppercase">Total Equipos</div>
                         <div class="fs-2 fw-bold text-light"><?= $totalServidores ?></div>
                     </div>
-                    <div class="fs-1">🖥️</div>
+                    <div class="fs-1 text-secondary"><i class="fa-light fa-server"></i></div>
                 </div>
             </div>
         </div>
@@ -93,7 +95,7 @@ foreach ($servidores as $srv) {
                         <div class="text-success small fw-bold text-uppercase">Online</div>
                         <div class="fs-2 fw-bold text-success"><?= $onlineServidores ?></div>
                     </div>
-                    <div class="fs-1">🟢</div>
+                    <div class="fs-1 text-success"><i class="fa-light fa-circle-check"></i></div>
                 </div>
             </div>
         </div>
@@ -104,7 +106,7 @@ foreach ($servidores as $srv) {
                         <div class="text-danger small fw-bold text-uppercase">Con Alertas / Offline</div>
                         <div class="fs-2 fw-bold text-danger"><?= $errorServidores ?></div>
                     </div>
-                    <div class="fs-1">🔴</div>
+                    <div class="fs-1 text-danger"><i class="fa-light fa-circle-exclamation"></i></div>
                 </div>
             </div>
         </div>
@@ -115,7 +117,7 @@ foreach ($servidores as $srv) {
         <h2 class="h3 fw-bold text-light mb-0">Servidores Monitoreados</h2>
         <div>
             <a href="config.php" class="btn btn-outline-primary fw-bold btn-sm px-3 py-2">
-                ➕ Agregar Equipo
+                <i class="fa-light fa-plus me-1"></i>Agregar Equipo
             </a>
         </div>
     </div>
@@ -123,11 +125,11 @@ foreach ($servidores as $srv) {
     <!-- Grilla de Tarjetas -->
     <?php if (empty($servidores)): ?>
         <div class="card p-5 text-center shadow-sm">
-            <div class="fs-1 mb-2">📡</div>
+            <div class="fs-1 mb-2 text-secondary"><i class="fa-light fa-tower-broadcast"></i></div>
             <h3 class="h4 text-light fw-bold">Aún no hay equipos configurados</h3>
             <p class="text-secondary mb-4">Empezá agregando un servidor con SSH para consultar <code>gosvrinfo</code>.</p>
             <div>
-                <a href="config.php" class="btn btn-primary fw-bold px-4 py-2">+ Configurar Primer Servidor</a>
+                <a href="config.php" class="btn btn-primary fw-bold px-4 py-2"><i class="fa-light fa-plus me-1"></i>Configurar Primer Servidor</a>
             </div>
         </div>
     <?php else: ?>
@@ -170,12 +172,12 @@ foreach ($servidores as $srv) {
                             <!-- SO y Uptime -->
                             <div class="mb-3 d-flex justify-content-between text-secondary small border-bottom border-secondary pb-2">
                                 <div>
-                                    🐧 <strong>SO:</strong> 
+                                    <i class="fa-brands fa-linux me-1"></i><strong>SO:</strong> 
                                     <?= e($data['operating_system']['name'] ?? 'Linux') ?> 
                                     <?= e($data['operating_system']['version'] ?? '') ?>
                                 </div>
                                 <div>
-                                    ⏱️ <strong>Uptime:</strong> 
+                                    <i class="fa-light fa-clock me-1"></i><strong>Uptime:</strong> 
                                     <span class="text-light fw-bold uptime-val"><?= formatearUptime($data['system_uptime'] ?? $srv['uptime']) ?></span>
                                 </div>
                             </div>
@@ -183,7 +185,7 @@ foreach ($servidores as $srv) {
                             <!-- Barra de CPU -->
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between metric-label mb-1">
-                                    <span>⚙️ CPU: <small class="text-secondary fw-normal"><?= e($data['CPU'] ?? 'Procesador') ?></small></span>
+                                    <span><i class="fa-light fa-microchip me-1"></i>CPU: <small class="text-secondary fw-normal"><?= e($data['CPU'] ?? 'Procesador') ?></small></span>
                                     <span class="metric-val text-<?= colorPorcentaje($cpuNum) ?> cpu-text"><?= e((string)$cpuVal) ?></span>
                                 </div>
                                 <div class="progress" role="progressbar" aria-valuenow="<?= $cpuNum ?>" aria-valuemin="0" aria-valuemax="100">
@@ -194,7 +196,7 @@ foreach ($servidores as $srv) {
                             <!-- Barra de RAM -->
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between metric-label mb-1">
-                                    <span>🧠 RAM: <small class="text-secondary fw-normal"><?= e($data['RAM'] ?? '') ?></small></span>
+                                    <span><i class="fa-light fa-memory me-1"></i>RAM: <small class="text-secondary fw-normal"><?= e($data['RAM'] ?? '') ?></small></span>
                                     <span class="metric-val text-<?= colorPorcentaje($ramNum) ?> ram-text"><?= e((string)$ramVal) ?></span>
                                 </div>
                                 <div class="progress" role="progressbar" aria-valuenow="<?= $ramNum ?>" aria-valuemin="0" aria-valuemax="100">
@@ -204,13 +206,13 @@ foreach ($servidores as $srv) {
 
                             <!-- Almacenamiento -->
                             <div class="mb-2 text-secondary small">
-                                💾 <strong>Almacenamiento:</strong> <span class="text-light"><?= e($discoInfo) ?></span>
+                                <i class="fa-light fa-hard-drive me-1"></i><strong>Almacenamiento:</strong> <span class="text-light"><?= e($discoInfo) ?></span>
                             </div>
 
                             <!-- IP Pública e ISP -->
                             <?php if (!empty($data['ip_public_address'])): ?>
                                 <div class="text-secondary small">
-                                    🌐 <strong>IP Pública:</strong> <?= e($data['ip_public_address']) ?> 
+                                    <i class="fa-light fa-globe me-1"></i><strong>IP Pública:</strong> <?= e($data['ip_public_address']) ?> 
                                     <?php if (!empty($data['city'])): ?>(<?= e($data['city']) ?>, <?= e($data['country'] ?? '') ?>)<?php endif; ?>
                                 </div>
                             <?php endif; ?>
@@ -218,14 +220,14 @@ foreach ($servidores as $srv) {
 
                         <div class="card-footer bg-transparent border-secondary d-flex justify-content-between align-items-center py-2">
                             <small class="text-secondary check-time">
-                                🕒 <?= !empty($srv['ultimo_check']) ? date('H:i:s d/m', strtotime($srv['ultimo_check'])) : 'Sin datos' ?>
+                                <i class="fa-light fa-clock me-1"></i><?= !empty($srv['ultimo_check']) ? date('H:i:s d/m', strtotime($srv['ultimo_check'])) : 'Sin datos' ?>
                             </small>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-outline-info fw-bold" onclick="refrescarServidor(<?= $srv['id'] ?>, this)">
-                                    🔄 Actualizar
+                                    <i class="fa-light fa-arrows-rotate me-1"></i>Actualizar
                                 </button>
                                 <a href="servidor.php?id=<?= $srv['id'] ?>" class="btn btn-sm btn-primary fw-bold">
-                                    Detalle 🔍
+                                    Detalle <i class="fa-light fa-magnifying-glass ms-1"></i>
                                 </a>
                             </div>
                         </div>
@@ -236,12 +238,12 @@ foreach ($servidores as $srv) {
     <?php endif; ?>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="./js/bootstrap.bundle.min.js"></script>
 <script>
 async function refrescarServidor(id, btn) {
     const card = document.getElementById(`card-srv-${id}`);
     const originalText = btn.innerHTML;
-    btn.innerHTML = '⏳';
+    btn.innerHTML = '<i class="fa-light fa-spinner fa-spin"></i>';
     btn.disabled = true;
 
     try {

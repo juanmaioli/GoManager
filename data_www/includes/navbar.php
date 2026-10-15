@@ -97,7 +97,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
 <!-- Barra superior para móviles y tablets (< 992px) -->
 <header class="navbar navbar-dark bg-dark border-bottom border-secondary d-lg-none px-3 py-2 sticky-top w-100" aria-label="Cabecera móvil">
     <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-1 m-0 brand-title" href="index.php">
-        <span aria-hidden="true">⚡</span>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
+        <i class="fa-light fa-bolt text-warning" aria-hidden="true"></i>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
     </a>
     <button class="navbar-toggler py-1 px-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-label="Abrir menú de navegación lateral">
         <span class="navbar-toggler-icon" style="width: 1.2em; height: 1.2em;"></span>
@@ -108,7 +108,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
 <aside class="offcanvas-lg offcanvas-start app-sidebar" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
     <div class="offcanvas-header border-bottom border-secondary d-lg-none pb-2 mb-2">
         <h6 class="offcanvas-title fw-bold text-primary d-flex align-items-center gap-1 m-0 brand-title" id="sidebarMenuLabel">
-            <span aria-hidden="true">⚡</span>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
+            <i class="fa-light fa-bolt text-warning" aria-hidden="true"></i>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
         </h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Cerrar menú lateral"></button>
     </div>
@@ -117,7 +117,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
         <!-- Logo en escritorio -->
         <div class="d-none d-lg-block pb-2 mb-2 border-bottom border-secondary">
             <a class="text-decoration-none fw-bold text-primary d-flex align-items-center gap-1 brand-title" href="index.php">
-                <span aria-hidden="true">⚡</span>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
+                <i class="fa-light fa-bolt text-warning" aria-hidden="true"></i>GoManager <span class="badge bg-secondary brand-badge text-light">Svr</span>
             </a>
             <div class="text-secondary sidebar-subtitle mt-1">Panel de Control</div>
         </div>
@@ -128,20 +128,20 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
             <ul class="nav nav-pills flex-column gap-1 mb-3">
                 <li class="nav-item">
                     <a class="sidebar-link <?= $paginaActual === 'index.php' ? 'active' : '' ?>" href="index.php" <?= $paginaActual === 'index.php' ? 'aria-current="page"' : '' ?>>
-                        <span aria-hidden="true">📊</span>
+                        <i class="fa-light fa-chart-line" aria-hidden="true"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="sidebar-link <?= $paginaActual === 'config.php' ? 'active' : '' ?>" href="config.php" <?= $paginaActual === 'config.php' ? 'aria-current="page"' : '' ?>>
-                        <span aria-hidden="true">⚙️</span>
+                        <i class="fa-light fa-gear" aria-hidden="true"></i>
                         <span>Configuración</span>
                     </a>
                 </li>
                 <?php if ($paginaActual === 'servidor.php'): ?>
                 <li class="nav-item">
                     <a class="sidebar-link active" href="#" aria-current="page">
-                        <span aria-hidden="true">🖥️</span>
+                        <i class="fa-light fa-server" aria-hidden="true"></i>
                         <span>Servidor</span>
                     </a>
                 </li>
@@ -154,7 +154,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
             <div class="px-1">
                 <div class="text-secondary sidebar-section-header fw-bold text-uppercase mb-1">Acciones</div>
                 <button type="button" class="btn btn-outline-info fw-bold w-100 btn-sync-compact d-flex align-items-center justify-content-center gap-1" id="btnSyncAll" onclick="sincronizarTodos()" aria-label="Sincronizar todos los servidores">
-                    <span aria-hidden="true">🔄</span>
+                    <i class="fa-light fa-arrows-rotate" aria-hidden="true"></i>
                     <span>Sincronizar</span>
                 </button>
                 <div class="text-center mt-1">
@@ -167,7 +167,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
         <div class="pt-2 mt-auto border-top border-secondary text-secondary" style="font-size: 0.7rem;">
             <div class="d-flex align-items-center justify-content-between">
                 <span>GoManager</span>
-                <span class="badge bg-dark border border-secondary text-secondary" style="font-size: 0.65rem;">v0.2.0</span>
+                <span class="badge bg-dark border border-secondary text-secondary" style="font-size: 0.65rem;">v0.3.0</span>
             </div>
         </div>
     </div>

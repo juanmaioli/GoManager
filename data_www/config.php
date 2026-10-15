@@ -99,7 +99,9 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración de Servidores - GoManager SvrInfo</title>
     <link rel="icon" href='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>'>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/bootstrap-color-extension.css" rel="stylesheet">
+    <link href="./css/all.css" rel="stylesheet">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-size: 1.05rem; }
         .card { background-color: #161b22; border-color: #30363d; }
@@ -116,11 +118,11 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
 <main class="container-fluid px-3 px-md-4 py-4 app-main">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h1 class="h2 fw-bold text-light mb-1">⚙️ Configuración de Equipos</h1>
+            <h1 class="h2 fw-bold text-light mb-1"><i class="fa-light fa-gear text-primary me-2"></i>Configuración de Equipos</h1>
             <p class="text-secondary mb-0">Administrá los servidores y contenedores a monitorear con <code>gosvrinfo</code>.</p>
         </div>
         <button type="button" class="btn btn-primary fw-bold px-4 py-2" onclick="abrirModalNuevo()">
-            ➕ Nuevo Servidor
+            <i class="fa-light fa-plus me-1"></i>Nuevo Servidor
         </button>
     </div>
 
@@ -152,9 +154,9 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
                         <?php if (empty($servidores)): ?>
                             <tr>
                                 <td colspan="8" class="text-center py-5 text-secondary">
-                                    <div class="fs-4 mb-2">📡 No hay servidores registrados aún.</div>
+                                    <div class="fs-4 mb-2"><i class="fa-light fa-tower-broadcast me-2"></i>No hay servidores registrados aún.</div>
                                     <p class="mb-3">Hacé clic en "Nuevo Servidor" para conectar tu primer equipo.</p>
-                                    <button class="btn btn-outline-primary fw-bold" onclick="abrirModalNuevo()">+ Agregar Servidor</button>
+                                    <button class="btn btn-outline-primary fw-bold" onclick="abrirModalNuevo()"><i class="fa-light fa-plus me-1"></i>Agregar Servidor</button>
                                 </td>
                             </tr>
                         <?php else: ?>
@@ -162,7 +164,7 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
                                 <tr>
                                     <td class="ps-4 fw-bold text-light">
                                         <a href="servidor.php?id=<?= $srv['id'] ?>" class="text-decoration-none text-light hover-primary">
-                                            🖥️ <?= e($srv['nombre']) ?>
+                                            <i class="fa-light fa-server text-primary me-1"></i><?= e($srv['nombre']) ?>
                                         </a>
                                     </td>
                                     <td><code><?= e($srv['host']) ?></code></td>
@@ -170,7 +172,7 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
                                     <td><code><?= e($srv['usuario']) ?></code></td>
                                     <td>
                                         <span class="badge bg-<?= $srv['auth_tipo'] === 'key' ? 'info' : 'secondary' ?>">
-                                            <?= $srv['auth_tipo'] === 'key' ? '🔑 Clave SSH' : '🔒 Contraseña' ?>
+                                            <?= $srv['auth_tipo'] === 'key' ? '<i class="fa-light fa-key me-1"></i>Clave SSH' : '<i class="fa-light fa-lock me-1"></i>Contraseña' ?>
                                         </span>
                                     </td>
                                     <td><code><?= e($srv['ruta_binario']) ?></code></td>
@@ -186,17 +188,17 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
                                     <td class="text-end pe-4">
                                         <button type="button" class="btn btn-sm btn-outline-info me-1 btn-action" 
                                             onclick='probarConexionServidor(<?= json_encode($srv) ?>)'>
-                                            🔌 Probar
+                                            <i class="fa-light fa-network-wired me-1"></i>Probar
                                         </button>
                                         <button type="button" class="btn btn-sm btn-outline-warning me-1 btn-action" 
                                             onclick='editarServidor(<?= json_encode($srv) ?>)'>
-                                            ✏️ Editar
+                                            <i class="fa-light fa-pen-to-square me-1"></i>Editar
                                         </button>
                                         <form method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar este servidor?');">
                                             <input type="hidden" name="accion" value="eliminar">
                                             <input type="hidden" name="id" value="<?= $srv['id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger btn-action">
-                                                🗑️
+                                            <button type="submit" class="btn btn-sm btn-outline-danger btn-action" title="Eliminar servidor">
+                                                <i class="fa-light fa-trash-can"></i>
                                             </button>
                                         </form>
                                     </td>
@@ -215,7 +217,7 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content card border-secondary">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold text-light" id="modalServidorLabel">🖥️ Nuevo Servidor</h5>
+                <h5 class="modal-title fw-bold text-light" id="modalServidorLabel"><i class="fa-light fa-server me-2"></i>Nuevo Servidor</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <form method="POST" id="formServidor">
@@ -245,8 +247,8 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
                         <div class="col-md-6">
                             <label for="srv_auth_tipo" class="form-label fw-bold">Método de Autenticación *</label>
                             <select class="form-select" id="srv_auth_tipo" name="auth_tipo" onchange="toggleAuthFields()">
-                                <option value="password">🔒 Contraseña</option>
-                                <option value="key">🔑 Clave Privada SSH</option>
+                                <option value="password">Contraseña (password)</option>
+                                <option value="key">Clave Privada SSH (key)</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -275,7 +277,7 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
 
                 <div class="modal-footer border-secondary justify-content-between">
                     <button type="button" class="btn btn-outline-info fw-bold" id="btnTestConexion" onclick="probarConexionForm()">
-                        🔌 Probar Conexión Ahora
+                        <i class="fa-light fa-network-wired me-1"></i>Probar Conexión Ahora
                     </button>
                     <div>
                         <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
@@ -287,7 +289,7 @@ $servidores = $pdo->query("SELECT * FROM servidores ORDER BY id DESC")->fetchAll
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="./js/bootstrap.bundle.min.js"></script>
 <script>
 const modalEl = document.getElementById('modalServidor');
 const bsModal = new bootstrap.Modal(modalEl);
@@ -307,7 +309,7 @@ function toggleAuthFields() {
 }
 
 function abrirModalNuevo() {
-    document.getElementById('modalServidorLabel').innerText = '🖥️ Nuevo Servidor';
+    document.getElementById('modalServidorLabel').innerHTML = '<i class="fa-light fa-server me-2"></i>Nuevo Servidor';
     document.getElementById('srv_id').value = '0';
     document.getElementById('srv_nombre').value = '';
     document.getElementById('srv_host').value = '';
@@ -323,7 +325,7 @@ function abrirModalNuevo() {
 }
 
 function editarServidor(srv) {
-    document.getElementById('modalServidorLabel').innerText = '✏️ Editar Servidor: ' + srv.nombre;
+    document.getElementById('modalServidorLabel').innerHTML = '<i class="fa-light fa-pen-to-square me-2"></i>Editar Servidor: ' + srv.nombre;
     document.getElementById('srv_id').value = srv.id;
     document.getElementById('srv_nombre').value = srv.nombre;
     document.getElementById('srv_host').value = srv.host;
@@ -352,7 +354,7 @@ async function probarConexionForm() {
     formData.append('ruta_binario', document.getElementById('srv_ruta_binario').value);
 
     resDiv.className = 'mt-3 alert alert-info mb-0';
-    resDiv.innerHTML = '⏳ Conectando vía SSH y ejecutando gosvrinfo...';
+    resDiv.innerHTML = '<i class="fa-light fa-spinner fa-spin me-2"></i>Conectando vía SSH y ejecutando gosvrinfo...';
     resDiv.classList.remove('d-none');
     btn.disabled = true;
 
@@ -362,14 +364,14 @@ async function probarConexionForm() {
 
         if (data.success) {
             resDiv.className = 'mt-3 alert alert-success mb-0';
-            resDiv.innerHTML = `<strong>✅ Éxito:</strong> ${data.message}<br><small>Host: ${data.hostname} | SO: ${data.os}</small>`;
+            resDiv.innerHTML = `<strong><i class="fa-light fa-circle-check text-success me-1"></i>Éxito:</strong> ${data.message}<br><small>Host: ${data.hostname} | SO: ${data.os}</small>`;
         } else {
             resDiv.className = 'mt-3 alert alert-danger mb-0';
-            resDiv.innerHTML = `<strong>❌ Error SSH:</strong> ${data.error}`;
+            resDiv.innerHTML = `<strong><i class="fa-light fa-circle-exclamation text-danger me-1"></i>Error SSH:</strong> ${data.error}`;
         }
     } catch (err) {
         resDiv.className = 'mt-3 alert alert-danger mb-0';
-        resDiv.innerHTML = `<strong>❌ Error de red:</strong> ${err.message}`;
+        resDiv.innerHTML = `<strong><i class="fa-light fa-circle-exclamation text-danger me-1"></i>Error de red:</strong> ${err.message}`;
     } finally {
         btn.disabled = false;
     }
@@ -378,17 +380,17 @@ async function probarConexionForm() {
 async function probarConexionServidor(srv) {
     const btn = event.target;
     const txtOriginal = btn.innerHTML;
-    btn.innerHTML = '⏳';
+    btn.innerHTML = '<i class="fa-light fa-spinner fa-spin"></i>';
     btn.disabled = true;
 
     try {
         const resp = await fetch(`api/sync.php?id=${srv.id}`);
         const data = await resp.json();
         if (data.success) {
-            alert(`✅ Conexión exitosa con ${srv.nombre}.\nUptime: ${data.data.system_uptime}s\nCPU: ${data.data.cpu_usage}`);
+            alert(`Conexión exitosa con ${srv.nombre}.\nUptime: ${data.data.system_uptime}s\nCPU: ${data.data.cpu_usage}`);
             location.reload();
         } else {
-            alert(`❌ Error al conectar con ${srv.nombre}:\n${data.error}`);
+            alert(`Error al conectar con ${srv.nombre}:\n${data.error}`);
             location.reload();
         }
     } catch (e) {
