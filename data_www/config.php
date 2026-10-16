@@ -99,6 +99,19 @@ $query = "
     ORDER BY s.id DESC
 ";
 $servidores = $pdo->query($query)->fetchAll();
+
+// Escanear dinámicamente los binarios disponibles en ./clientes
+$clientesDir = __DIR__ . '/clientes';
+$binariosDisponibles = [];
+if (is_dir($clientesDir)) {
+    $archivos = scandir($clientesDir);
+    foreach ($archivos as $archivo) {
+        if ($archivo !== '.' && $archivo !== '..' && !str_starts_with($archivo, '.') && is_file($clientesDir . '/' . $archivo)) {
+            $binariosDisponibles[] = $archivo;
+        }
+    }
+    sort($binariosDisponibles);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es" data-bs-theme="dark">
@@ -300,16 +313,120 @@ $servidores = $pdo->query($query)->fetchAll();
                     <div id="resultadoTest" class="mt-3 d-none alert alert-info mb-0" role="alert"></div>
                 </div>
 
-                <div class="modal-footer border-secondary justify-content-between">
-                    <button type="button" class="btn btn-info text-dark fw-bold" id="btnTestConexion" onclick="probarConexionForm()">
-                        <i class="fa-light fa-network-wired me-1"></i>Probar Conexión Ahora
-                    </button>
+                <div class="modal-footer border-secondary justify-content-between flex-wrap gap-2">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-info text-dark fw-bold" id="btnTestConexion" onclick="probarConexionForm()">
+                            <i class="fa-light fa-network-wired me-1"></i>Probar Conexión Ahora
+                        </button>
+                        <button type="button" class="btn btn-dark border border-secondary text-light fw-bold" id="btnInstalarCliente" onclick="abrirModalInstalarCliente()">
+                            <i class="fa-light fa-cloud-arrow-up me-1 text-info"></i>Instalar gosvrinfo
+                        </button>
+                    </div>
                     <div>
                         <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary fw-bold px-4">Guardar Servidor</button>
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Elegir Binario y Copiar gosvrinfo vía SCP -->
+<div class="modal fade" id="modalInstalarCliente" tabindex="-1" aria-labelledby="modalInstalarClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold text-light" id="modalInstalarClienteLabel">
+                    <i class="fa-light fa-cloud-arrow-up text-info me-2"></i>Instalar gosvrinfo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" onclick="volverModalServidor()"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-secondary small mb-3">
+                    Seleccioná la versión del ejecutable disponible en <code class="text-info">./clientes</code> para transferir por SCP a <code class="text-info">/tmp/gosvrinfo</code> en el servidor:
+                </p>
+
+                <div class="mb-3">
+                    <label for="scp_binario" class="form-label fw-bold">Ejecutable de gosvrinfo</label>
+                    <select class="form-select bg-dark text-light border-secondary" id="scp_binario">
+                        <?php if (empty($binariosDisponibles)): ?>
+                            <option value="" disabled selected>No se encontraron binarios en ./clientes</option>
+                        <?php else: ?>
+                            <?php foreach ($binariosDisponibles as $bin): ?>
+                                <?php
+                                $etiqueta = match ($bin) {
+                                    'gosvrinfo' => 'gosvrinfo (Linux x86_64 / amd64)',
+                                    'gosvrinfo-arm64' => 'gosvrinfo-arm64 (Linux aarch64 / ARM64)',
+                                    'gosvrinfo-armv7l' => 'gosvrinfo-armv7l (Linux ARMv7 / 32-bit)',
+                                    'gosvrinfo-armv6l' => 'gosvrinfo-armv6l (Linux ARMv6 / armhf)',
+                                    default => $bin
+                                };
+                                ?>
+                                <option value="<?= htmlspecialchars($bin) ?>" <?= $bin === 'gosvrinfo' ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($etiqueta) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+
+                <div class="alert alert-secondary py-2 small mb-3">
+                    <i class="fa-light fa-server me-1 text-info"></i> Destino: <strong id="scp_destino_texto">-</strong>
+                </div>
+
+                <div id="resultadoScp" class="d-none alert mb-0" role="alert"></div>
+            </div>
+            <div class="modal-footer border-secondary justify-content-between">
+                <button type="button" class="btn btn-secondary" onclick="volverModalServidor()">
+                    <i class="fa-light fa-arrow-left me-1"></i>Volver
+                </button>
+                <button type="button" class="btn btn-primary fw-bold" id="btnEjecutarScp" onclick="ejecutarTransferenciaScp()">
+                    <i class="fa-light fa-paper-plane me-1"></i>Copiar con SCP
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Instrucción Post-Instalación -->
+<div class="modal fade" id="modalInstruccionCliente" tabindex="-1" aria-labelledby="modalInstruccionClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold text-success" id="modalInstruccionClienteLabel">
+                    <i class="fa-light fa-circle-check me-2"></i>Cliente Copiado a /tmp
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="fs-5 text-light mb-3">
+                    Ejecute '<code>sudo install -m 755 /tmp/gosvrinfo /usr/local/bin/gosvrinfo && rm /tmp/gosvrinfo</code>'
+                </p>
+
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control font-monospace bg-dark text-warning border-secondary" id="txtComandoInstalar" value="sudo install -m 755 /tmp/gosvrinfo /usr/local/bin/gosvrinfo && rm /tmp/gosvrinfo" readonly>
+                    <button class="btn btn-primary fw-bold" type="button" onclick="copiarComandoInstalar()">
+                        <i class="fa-light fa-copy me-1"></i>Copiar
+                    </button>
+                </div>
+
+                <div id="msgCopiado" class="text-success small fw-bold d-none mb-2">
+                    <i class="fa-light fa-check me-1"></i>Comando copiado al portapapeles
+                </div>
+
+                <div class="small text-secondary">
+                    Pegá este comando en la terminal SSH del servidor para ubicar el ejecutable en <code class="text-info">/usr/local/bin</code> con permisos correspondientes.
+                </div>
+            </div>
+            <div class="modal-footer border-secondary justify-content-between">
+                <button type="button" class="btn btn-dark border border-secondary text-light" id="btnAbrirTerminalInstalado" onclick="abrirTerminalDesdeInstalacion()">
+                    <i class="fa-light fa-terminal me-1 text-info"></i>Abrir Terminal SSH
+                </button>
+                <button type="button" class="btn btn-success fw-bold px-4" data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -322,6 +439,12 @@ $servidores = $pdo->query($query)->fetchAll();
 <script>
 const modalEl = document.getElementById('modalServidor');
 const bsModal = new bootstrap.Modal(modalEl);
+
+const modalScpEl = document.getElementById('modalInstalarCliente');
+const bsModalScp = new bootstrap.Modal(modalScpEl);
+
+const modalInstruccionEl = document.getElementById('modalInstruccionCliente');
+const bsModalInstruccion = new bootstrap.Modal(modalInstruccionEl);
 
 function toggleAuthFields() {
     const tipo = document.getElementById('srv_auth_tipo').value;
@@ -432,6 +555,91 @@ async function probarConexionServidor(srv) {
 
 function sincronizarTodos() {
     window.location.href = 'index.php?sync_all=1';
+}
+
+function abrirModalInstalarCliente() {
+    const host = document.getElementById('srv_host').value.trim();
+    const usuario = document.getElementById('srv_usuario').value.trim();
+    const puerto = document.getElementById('srv_puerto').value.trim() || '22';
+
+    if (!host || !usuario) {
+        alert('Por favor completá los campos "Host o Dirección IP" y "Usuario SSH" antes de instalar el cliente.');
+        return;
+    }
+
+    document.getElementById('scp_destino_texto').textContent = `${usuario}@${host}:${puerto}`;
+    const resScp = document.getElementById('resultadoScp');
+    resScp.className = 'd-none alert mb-0';
+    resScp.innerHTML = '';
+    document.getElementById('btnEjecutarScp').disabled = false;
+
+    bsModal.hide();
+    bsModalScp.show();
+}
+
+function volverModalServidor() {
+    bsModalScp.hide();
+    bsModal.show();
+}
+
+async function ejecutarTransferenciaScp() {
+    const btn = document.getElementById('btnEjecutarScp');
+    const resScp = document.getElementById('resultadoScp');
+    const binario = document.getElementById('scp_binario').value;
+
+    const formData = new FormData();
+    formData.append('id', document.getElementById('srv_id').value);
+    formData.append('host', document.getElementById('srv_host').value);
+    formData.append('puerto', document.getElementById('srv_puerto').value);
+    formData.append('usuario', document.getElementById('srv_usuario').value);
+    formData.append('auth_tipo', document.getElementById('srv_auth_tipo').value);
+    formData.append('password', document.getElementById('srv_password').value);
+    formData.append('clave_privada', document.getElementById('srv_clave_privada').value);
+    formData.append('binario', binario);
+
+    btn.disabled = true;
+    resScp.className = 'alert alert-info mb-0';
+    resScp.innerHTML = '<i class="fa-light fa-spinner fa-spin me-2"></i>Copiando con SCP a /tmp/gosvrinfo...';
+    resScp.classList.remove('d-none');
+
+    try {
+        const resp = await fetch('api/install_client.php', { method: 'POST', body: formData });
+        const data = await resp.json();
+
+        if (data.success) {
+            bsModalScp.hide();
+            bsModalInstruccion.show();
+        } else {
+            resScp.className = 'alert alert-danger mb-0';
+            resScp.innerHTML = `<strong><i class="fa-light fa-circle-exclamation text-danger me-1"></i>Error en transferencia:</strong> ${data.error}`;
+            btn.disabled = false;
+        }
+    } catch (err) {
+        resScp.className = 'alert alert-danger mb-0';
+        resScp.innerHTML = `<strong><i class="fa-light fa-circle-exclamation text-danger me-1"></i>Error de red:</strong> ${err.message}`;
+        btn.disabled = false;
+    }
+}
+
+function copiarComandoInstalar() {
+    const cmd = document.getElementById('txtComandoInstalar').value;
+    navigator.clipboard.writeText(cmd).then(() => {
+        const msg = document.getElementById('msgCopiado');
+        msg.classList.remove('d-none');
+        setTimeout(() => msg.classList.add('d-none'), 3000);
+    });
+}
+
+function abrirTerminalDesdeInstalacion() {
+    const srvId = parseInt(document.getElementById('srv_id').value, 10);
+    const srvNombre = document.getElementById('srv_nombre').value || 'Servidor';
+
+    if (srvId > 0) {
+        bsModalInstruccion.hide();
+        abrirTerminal(srvId, srvNombre);
+    } else {
+        alert('Primero guardá los datos del servidor para poder abrir la consola WebTTY integrada.');
+    }
 }
 </script>
 </body>

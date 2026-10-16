@@ -15,6 +15,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 ## ✨ Características Principales
 
 - 💻 **Terminal SSH Embebida (WebTTY):** Consola PTY interactiva completa en el navegador vía WebSockets (`wss://`), renderizada con tipografía **CaskaydiaCove Nerd Font Mono**, modo **Pantalla Completa** (botón y atajo `Alt+Enter`), controles interactivos de **tamaño de texto** (botones de zoom, indicador en px, persistencia en `localStorage` y atajos `Ctrl++`/`Ctrl+-`/`Ctrl+0`), colores ANSI, atajos de teclado (`Ctrl+C`, `Ctrl+D`), soporte para editores (`nano`, `vim`, `htop`), ajuste dinámico de tamaño y tokens de sesión de un solo uso.
+- 🚀 **Instalador Remoto de Clientes vía SCP:** Botón integrado en la carga o edición de servidores para transferir automáticamente el ejecutable `gosvrinfo` a `/tmp/gosvrinfo` en el servidor destino, con detección dinámica de binarios disponibles en `./clientes` (x86_64, arm64, etc.) y modal explicativo con el comando exacto para moverlo a `/usr/local/bin` con un solo clic.
 - 🌓 **Selector de Tema Dinámico (Claro / Oscuro):** Conmutación instantánea mediante el atributo nativo `data-bs-theme`, persistencia local en `localStorage` y transiciones fluidas de color sin parpadeo (FOUC).
 - 🐧 **Identificación Visual de Distribuciones:** Detección automática del sistema operativo mostrando el logo oficial de la distribución Linux (Debian, Ubuntu, Fedora, CentOS, Arch, openSUSE, Raspberry Pi, etc.).
 - 🧭 **Menú Lateral Responsivo (Sidebar):** Barra de navegación fija izquierda, compacta y accesible, con transición fluida a menú offcanvas en dispositivos móviles y selector de tema integrado.
@@ -23,7 +24,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 - 📦 **Recursos 100% Locales (Offline):** Dependencias completas en el proyecto (Bootstrap 5.3, Xterm.js, extensiones de color, FontAwesome 7 Pro y fuentes vectoriales WOFF2) sin llamadas a CDNs externos.
 - 🔑 **Autenticación Dual SSH:** Soporte para clave privada (RSA, Ed25519, PEM) o usuario y contraseña (`sshpass`).
 - 🔍 **Detalle Técnico Exhaustivo:** Vista profunda de cada equipo con métricas de CPU, memoria, tarjetas gráficas (GPU/VRAM), almacenamiento particionado e interfaces de red.
-- ⚙️ **Administración (ABM):** Gestión ágil de servidores con herramienta incorporada para **probar conexión SSH** y abrir terminal directa antes de guardar cambios.
+- ⚙️ **Administración (ABM):** Gestión ágil de servidores con herramienta incorporada para **probar conexión SSH**, instalar el cliente remoto y abrir terminal directa antes de guardar cambios.
 - ⏱️ **Auto-chequeo Periódico desde la Web:** Selector configurable en la barra lateral (Desactivado, 1, 5, 10 y 15 min) con cuenta regresiva en vivo, persistencia en `localStorage`, pausa automática inteligente si la terminal SSH está abierta y botón de ejecución manual directa.
 - 🔄 **Sincronización Flexible:** Actualización en lote por AJAX (`api/sync_all.php`), individual bajo demanda y modo CLI (`sync_cli.php`) para tareas programadas (cron).
 - 🕒 **Normalización de Hora Local:** Conversión transparente de marcas temporales UTC de SQLite a hora oficial argentina (`America/Argentina/Buenos_Aires`) en dashboard, detalles y configuración.
@@ -71,7 +72,7 @@ Abrí el navegador e ingresá en:
 ```text
 ├── Dockerfile                  # Imagen PHP 8.3 con Apache, OpenSSH, proxy WebSocket y WebTTY
 ├── compose.yml                 # Definición del contenedor y volúmenes persistentes
-├── entrypoint.sh               # Script de inicio que levanta WebTTY y Apache
+├── entrypoint.sh               # Script supervisor que mantiene WebTTY 24/7 y Apache
 ├── README.md                   # Documentación oficial del proyecto
 ├── services/                   # Microservicios auxiliares
 │   └── webtty/                 # Daemon en Go para puente WebSocket <-> SSH PTY
@@ -79,13 +80,14 @@ Abrí el navegador e ingresá en:
 ├── data_php/                   # Configuración personalizada de PHP (php.ini)
 └── data_www/                   # Código fuente de la aplicación web
     ├── index.php               # Dashboard general de métricas en 4 columnas
-    ├── config.php              # Administración (ABM) de servidores y test SSH
+    ├── config.php              # Administración (ABM), test SSH e instalación de clientes
     ├── servidor.php            # Vista detallada de métricas por equipo y terminal SSH
     ├── sync_cli.php            # Sincronización por línea de comandos / cron
     ├── api/                    # Endpoints para peticiones AJAX
     │   ├── sync.php            # Sincronización en caliente de un servidor
     │   ├── sync_all.php        # Sincronización masiva de servidores activos
     │   ├── test_ssh.php        # Validación inmediata de credenciales SSH
+    │   ├── install_client.php  # Transferencia remota vía SCP de binarios gosvrinfo
     │   └── terminal_session.php# Emisión de tokens de un solo uso para WebTTY
     ├── bin/                    # Binarios ejecutables auxiliares (webtty compilado)
     ├── css/                    # Hojas de estilo locales
@@ -103,7 +105,7 @@ Abrí el navegador e ingresá en:
     ├── webfonts/               # Fuentes FontAwesome y CaskaydiaCove Nerd Font Mono (TTF / WOFF2)
     ├── includes/               # Componentes compartidos del backend
     │   ├── db.php              # Conexión SQLite y esquema de tablas
-    │   ├── ssh.php             # Conector SSH para ejecución remota
+    │   ├── ssh.php             # Conector SSH para ejecución remota y copia SCP
     │   ├── helpers.php         # Mapeo de logos de distro y funciones auxiliares
     │   └── navbar.php          # Menú lateral accesible con switch de tema
     ├── db/                     # Almacenamiento protegido de database.sqlite

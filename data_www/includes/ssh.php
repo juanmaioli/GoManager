@@ -111,3 +111,100 @@ function ejecutarSSH(array $servidor, ?string $comando = null, int $timeout = 6)
         'data' => $jsonData
     ];
 }
+
+/**
+ * Copia un archivo local al servidor remoto vía SCP.
+ *
+ * @param array $servidor Datos del servidor (host, puerto, usuario, auth_tipo, password, clave_privada)
+ * @param string $archivoLocal Ruta completa al archivo local
+ * @param string $destinoRemoto Ruta remota (por defecto /tmp/gosvrinfo)
+ * @param int $timeout Segundos de espera
+ * @return array ['success' => bool, 'output' => string, 'error' => string]
+ */
+function ejecutarSCP(array $servidor, string $archivoLocal, string $destinoRemoto = '/tmp/gosvrinfo', int $timeout = 20): array
+{
+    if (!file_exists($archivoLocal) || !is_readable($archivoLocal)) {
+        return ['success' => false, 'output' => '', 'error' => "El archivo local no existe o no se puede leer: {$archivoLocal}"];
+    }
+
+    $puerto = (int)($servidor['puerto'] ?? 22);
+    $authTipo = $servidor['auth_tipo'] ?? 'password';
+
+    $keyFile = null;
+    $scpOpts = "-P {$puerto} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout={$timeout} -o LogLevel=ERROR";
+
+    // Destino remoto en formato: usuario@host:/ruta
+    $target = sprintf('%s@%s:%s', $servidor['usuario'], $servidor['host'], $destinoRemoto);
+
+    if ($authTipo === 'key') {
+        if (empty(trim($servidor['clave_privada'] ?? ''))) {
+            return ['success' => false, 'output' => '', 'error' => 'No se configuró la clave privada SSH.'];
+        }
+
+        $keyFile = tempnam('/tmp', 'scp_k_');
+        file_put_contents($keyFile, $servidor['clave_privada']);
+        chmod($keyFile, 0600);
+
+        $scpCmd = sprintf(
+            'scp -i %s -o BatchMode=yes %s %s %s',
+            escapeshellarg($keyFile),
+            $scpOpts,
+            escapeshellarg($archivoLocal),
+            escapeshellarg($target)
+        );
+    } else {
+        $password = escapeshellarg($servidor['password'] ?? '');
+        $scpCmd = sprintf(
+            'sshpass -p %s scp %s %s %s',
+            $password,
+            $scpOpts,
+            escapeshellarg($archivoLocal),
+            escapeshellarg($target)
+        );
+    }
+
+    $descriptors = [
+        0 => ['pipe', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w']
+    ];
+
+    $process = proc_open($scpCmd, $descriptors, $pipes);
+    if (!is_resource($process)) {
+        if ($keyFile && file_exists($keyFile)) {
+            @unlink($keyFile);
+        }
+        return ['success' => false, 'output' => '', 'error' => 'No se pudo iniciar el proceso SCP local.'];
+    }
+
+    fclose($pipes[0]);
+    $stdout = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    $stderr = stream_get_contents($pipes[2]);
+    fclose($pipes[2]);
+
+    $exitCode = proc_close($process);
+
+    if ($keyFile && file_exists($keyFile)) {
+        @unlink($keyFile);
+    }
+
+    $stdout = trim($stdout);
+    $stderr = trim($stderr);
+
+    if ($exitCode !== 0) {
+        $msgError = !empty($stderr) ? $stderr : "Fallo al transferir con SCP (código de salida: {$exitCode})";
+        return [
+            'success' => false,
+            'output' => $stdout,
+            'error' => $msgError
+        ];
+    }
+
+    return [
+        'success' => true,
+        'output' => $stdout,
+        'error' => ''
+    ];
+}
+
