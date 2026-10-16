@@ -12,6 +12,8 @@ services:
       - ./data_php/php.ini:/usr/local/etc/php/php.ini
     ports:
       - "8090:443"
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
     deploy:
       resources:
         limits:

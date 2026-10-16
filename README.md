@@ -24,7 +24,8 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 - 🔑 **Autenticación Dual SSH:** Soporte para clave privada (RSA, Ed25519, PEM) o usuario y contraseña (`sshpass`).
 - 🔍 **Detalle Técnico Exhaustivo:** Vista profunda de cada equipo con métricas de CPU, memoria, tarjetas gráficas (GPU/VRAM), almacenamiento particionado e interfaces de red.
 - ⚙️ **Administración (ABM):** Gestión ágil de servidores con herramienta incorporada para **probar conexión SSH** y abrir terminal directa antes de guardar cambios.
-- 🔄 **Sincronización Flexible:** Actualización bajo demanda por AJAX (individual o masiva) y modo CLI (`sync_cli.php`) para tareas programadas (cron).
+- ⏱️ **Auto-chequeo Periódico desde la Web:** Selector configurable en la barra lateral (Desactivado, 1, 5, 10 y 15 min) con cuenta regresiva en vivo, persistencia en `localStorage`, pausa automática inteligente si la terminal SSH está abierta y botón de ejecución manual directa.
+- 🔄 **Sincronización Flexible:** Actualización en lote por AJAX (`api/sync_all.php`), individual bajo demanda y modo CLI (`sync_cli.php`) para tareas programadas (cron).
 - 🗄️ **Base de Datos Embebida:** SQLite con esquema relacional auto-inicializable y sin mantenimiento de servicios de base de datos externos.
 
 ---
@@ -81,7 +82,8 @@ Abrí el navegador e ingresá en:
     ├── servidor.php            # Vista detallada de métricas por equipo y terminal SSH
     ├── sync_cli.php            # Sincronización por línea de comandos / cron
     ├── api/                    # Endpoints para peticiones AJAX
-    │   ├── sync.php            # Sincronización en caliente de métricas
+    │   ├── sync.php            # Sincronización en caliente de un servidor
+    │   ├── sync_all.php        # Sincronización masiva de servidores activos
     │   ├── test_ssh.php        # Validación inmediata de credenciales SSH
     │   └── terminal_session.php# Emisión de tokens de un solo uso para WebTTY
     ├── bin/                    # Binarios ejecutables auxiliares (webtty compilado)

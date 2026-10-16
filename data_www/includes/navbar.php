@@ -169,6 +169,29 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
                     <span class="text-secondary" style="font-size: 0.7rem;" id="syncStatusGlobal">Listo</span>
                 </div>
             </div>
+
+            <!-- Auto-chequeo de Actividad -->
+            <div class="px-1 mt-2">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <label for="selectAutoRefresh" class="text-secondary sidebar-section-header fw-bold text-uppercase mb-0">
+                        <i class="fa-light fa-timer me-1 text-info"></i>Auto-chequeo
+                    </label>
+                    <span class="badge bg-secondary font-monospace" id="badgeAutoRefreshStatus" style="font-size: 0.65rem;">Off</span>
+                </div>
+                <select id="selectAutoRefresh" class="form-select form-select-sm bg-body-tertiary border-secondary-subtle fw-bold" style="font-size: 0.76rem;" aria-label="Intervalo de auto-chequeo de actividad" onchange="cambiarIntervaloAutoRefresh(this.value)">
+                    <option value="0">Desactivado</option>
+                    <option value="60">Cada 1 min</option>
+                    <option value="300">Cada 5 min</option>
+                    <option value="600">Cada 10 min</option>
+                    <option value="900">Cada 15 min</option>
+                </select>
+                <div class="d-flex justify-content-between align-items-center mt-1 px-1">
+                    <span class="text-secondary font-monospace" style="font-size: 0.68rem;" id="txtAutoRefreshCountdown">Inactivo</span>
+                    <button type="button" class="btn btn-sm btn-dark border border-secondary text-light p-0 px-1" id="btnAutoRefreshManualTick" onclick="ejecutarAutoRefreshInmediato()" title="Chequear ahora" aria-label="Chequear ahora" style="font-size: 0.65rem; line-height: 1.2;">
+                        <i class="fa-light fa-play"></i>
+                    </button>
+                </div>
+            </div>
         </nav>
 
         <!-- Selector de Tema con Emojis en Sidebar -->
