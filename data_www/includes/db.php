@@ -3,6 +3,8 @@
 
 declare(strict_types=1);
 
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 $dbPath = __DIR__ . '/../db/database.sqlite';
 
 try {

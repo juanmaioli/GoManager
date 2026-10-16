@@ -3,9 +3,36 @@
 
 declare(strict_types=1);
 
+// Zona horaria local por defecto
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 function e(?string $str): string
 {
     return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Convierte una fecha/hora guardada en UTC (formato SQLite) a la hora local para mostrar en pantalla.
+ *
+ * @param string|null $fechaUtc Fecha en formato 'YYYY-MM-DD HH:MM:SS'
+ * @param string $formato Formato de salida de fecha (por defecto 'H:i:s d/m')
+ * @return string Fecha formateada en hora local o 'Sin datos'
+ */
+function formatearFechaLocal(?string $fechaUtc, string $formato = 'H:i:s d/m'): string
+{
+    if (empty(trim((string)$fechaUtc))) {
+        return 'Sin datos';
+    }
+
+    try {
+        $fechaString = trim((string)$fechaUtc);
+        $esIsoOConZona = str_ends_with($fechaString, 'Z') || str_contains($fechaString, '+') || str_contains($fechaString, 'T');
+        $dt = new DateTime($esIsoOConZona ? $fechaString : $fechaString . ' UTC');
+        $dt->setTimezone(new DateTimeZone('America/Argentina/Buenos_Aires'));
+        return $dt->format($formato);
+    } catch (\Throwable $e) {
+        return (string)$fechaUtc;
+    }
 }
 
 /**
@@ -13,8 +40,8 @@ function e(?string $str): string
  */
 function formatearUptime(int|float|string|null $segundos): string
 {
-    if ($segundos === null || !is_numeric($segundos)) {
-        return 'No disponible';
+    if ($segundos === null || !is_numeric($segundos) || (int)$segundos <= 0) {
+        return 'N/A';
     }
 
     $sec = (int)$segundos;

@@ -200,6 +200,11 @@ $servidores = $pdo->query($query)->fetchAll();
                                         <?php else: ?>
                                             <span class="badge bg-secondary">Pendiente</span>
                                         <?php endif; ?>
+                                        <?php if (!empty($srv['ultimo_check'])): ?>
+                                            <div class="text-secondary font-monospace" style="font-size: 0.7rem; margin-top: 2px;">
+                                                <i class="fa-light fa-clock me-1"></i><?= formatearFechaLocal($srv['ultimo_check']) ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-end pe-4">
                                         <button type="button" class="btn btn-sm btn-dark border border-secondary text-light me-1 btn-action" 

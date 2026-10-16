@@ -95,7 +95,7 @@ $iconoSO = iconoDistroSO($soNombre);
                     <?= strtoupper(e($servidor['ultimo_estado'])) ?>
                 </span>
             </h1>
-            <p class="text-secondary mb-0">Host: <code><?= e($servidor['host']) ?>:<?= e((string)$servidor['puerto']) ?></code> | Usuario: <code><?= e($servidor['usuario']) ?></code></p>
+            <p class="text-secondary mb-0">Host: <code><?= e($servidor['host']) ?>:<?= e((string)$servidor['puerto']) ?></code> | Usuario: <code><?= e($servidor['usuario']) ?></code> | Último chequeo: <strong class="text-light"><i class="fa-light fa-clock me-1"></i><?= formatearFechaLocal($servidor['ultimo_check']) ?></strong></p>
         </div>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-dark border border-secondary text-light fw-bold px-3 py-2" onclick="abrirTerminalSSH(<?= $id ?>, '<?= e($servidor['nombre']) ?>')">
@@ -152,7 +152,7 @@ $iconoSO = iconoDistroSO($soNombre);
             <div class="card p-3 shadow-sm h-100">
                 <div class="fw-bold fs-5 text-light mb-2"><i class="<?= $iconoSO ?> me-2"></i>Sistema Operativo</div>
                 <div class="fs-4 fw-bold text-info mb-2">
-                    <i class="fa-light fa-clock me-1"></i><?= formatearUptime($data['system_uptime'] ?? $servidor['uptime']) ?>
+                    <i class="fa-light fa-clock me-1"></i><?= formatearUptime($data['system_uptime'] ?? $ultimaMetrica['uptime'] ?? null) ?>
                 </div>
                 <div class="small text-secondary">
                     <div><strong>Distribución:</strong> <span class="text-light"><?= e($data['operating_system']['name'] ?? 'Linux') ?> <?= e($data['operating_system']['version'] ?? '') ?></span></div>

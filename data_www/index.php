@@ -196,7 +196,7 @@ foreach ($servidores as $srv) {
 
                         <div class="card-footer bg-transparent border-secondary d-flex justify-content-between align-items-center py-2">
                             <small class="text-secondary check-time">
-                                <i class="fa-light fa-clock me-1"></i><?= !empty($srv['ultimo_check']) ? date('H:i:s d/m', strtotime($srv['ultimo_check'])) : 'Sin datos' ?>
+                                <i class="fa-light fa-clock me-1"></i><?= formatearFechaLocal($srv['ultimo_check']) ?>
                             </small>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-dark border border-secondary text-light fw-bold" onclick="abrirTerminalSSH(<?= $srv['id'] ?>, '<?= e($srv['nombre']) ?>')" title="Terminal SSH" aria-label="Terminal SSH">
