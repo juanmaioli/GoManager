@@ -61,6 +61,7 @@ foreach ($servidores as $srv) {
     <link href="./css/bootstrap-color-extension.css" rel="stylesheet">
     <link href="./css/all.css" rel="stylesheet">
     <link href="./css/styles.css" rel="stylesheet">
+    <link href="./css/xterm.css" rel="stylesheet">
     <style>
         .progress { height: 18px; border-radius: 6px; }
         .metric-label { font-size: 0.95rem; font-weight: 600; }
@@ -114,7 +115,7 @@ foreach ($servidores as $srv) {
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h2 class="h3 fw-bold text-light mb-0">Servidores Monitoreados</h2>
         <div>
-            <a href="config.php" class="btn btn-outline-primary fw-bold btn-sm px-3 py-2">
+            <a href="config.php" class="btn btn-primary fw-bold btn-sm px-3 py-2">
                 <i class="fa-light fa-plus me-1"></i>Agregar Equipo
             </a>
         </div>
@@ -198,7 +199,10 @@ foreach ($servidores as $srv) {
                                 <i class="fa-light fa-clock me-1"></i><?= !empty($srv['ultimo_check']) ? date('H:i:s d/m', strtotime($srv['ultimo_check'])) : 'Sin datos' ?>
                             </small>
                             <div class="btn-group">
-                                <button type="button" class="btn btn-sm btn-outline-info fw-bold" onclick="refrescarServidor(<?= $srv['id'] ?>, this)" title="Actualizar métricas" aria-label="Actualizar métricas">
+                                <button type="button" class="btn btn-sm btn-dark border border-secondary text-light fw-bold" onclick="abrirTerminalSSH(<?= $srv['id'] ?>, '<?= e($srv['nombre']) ?>')" title="Terminal SSH" aria-label="Terminal SSH">
+                                    <i class="fa-light fa-terminal"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-info text-dark fw-bold" onclick="refrescarServidor(<?= $srv['id'] ?>, this)" title="Actualizar métricas" aria-label="Actualizar métricas">
                                     <i class="fa-light fa-arrows-rotate"></i>
                                 </button>
                                 <a href="servidor.php?id=<?= $srv['id'] ?>" class="btn btn-sm btn-primary fw-bold" title="Ver detalle del servidor" aria-label="Ver detalle del servidor">
@@ -215,6 +219,9 @@ foreach ($servidores as $srv) {
 
 <script src="./js/bootstrap.bundle.min.js"></script>
 <script src="./js/app.js"></script>
+<script src="./js/xterm.js"></script>
+<script src="./js/xterm-addon-fit.js"></script>
+<script src="./js/terminal.js"></script>
 <script>
 async function refrescarServidor(id, btn) {
     const card = document.getElementById(`card-srv-${id}`);

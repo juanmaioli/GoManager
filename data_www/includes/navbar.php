@@ -161,7 +161,7 @@ $paginaActual = basename($_SERVER['PHP_SELF'] ?? '');
             <!-- Acciones Rápidas -->
             <div class="px-1">
                 <div class="text-secondary sidebar-section-header fw-bold text-uppercase mb-1">Acciones</div>
-                <button type="button" class="btn btn-outline-info fw-bold w-100 btn-sync-compact d-flex align-items-center justify-content-center gap-1" id="btnSyncAll" onclick="sincronizarTodos()" aria-label="Sincronizar todos los servidores">
+                <button type="button" class="btn btn-info fw-bold w-100 btn-sync-compact d-flex align-items-center justify-content-center gap-1 text-dark" id="btnSyncAll" onclick="sincronizarTodos()" aria-label="Sincronizar todos los servidores">
                     <i class="fa-light fa-arrows-rotate" aria-hidden="true"></i>
                     <span>Sincronizar</span>
                 </button>

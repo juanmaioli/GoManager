@@ -117,6 +117,7 @@ $servidores = $pdo->query($query)->fetchAll();
     <link href="./css/bootstrap-color-extension.css" rel="stylesheet">
     <link href="./css/all.css" rel="stylesheet">
     <link href="./css/styles.css" rel="stylesheet">
+    <link href="./css/xterm.css" rel="stylesheet">
     <style>
         .btn-action { font-size: 0.95rem; font-weight: 600; }
     </style>
@@ -166,7 +167,7 @@ $servidores = $pdo->query($query)->fetchAll();
                                 <td colspan="8" class="text-center py-5 text-secondary">
                                     <div class="fs-4 mb-2"><i class="fa-light fa-tower-broadcast me-2"></i>No hay servidores registrados aún.</div>
                                     <p class="mb-3">Hacé clic en "Nuevo Servidor" para conectar tu primer equipo.</p>
-                                    <button class="btn btn-outline-primary fw-bold" onclick="abrirModalNuevo()"><i class="fa-light fa-plus me-1"></i>Agregar Servidor</button>
+                                    <button class="btn btn-primary fw-bold" onclick="abrirModalNuevo()"><i class="fa-light fa-plus me-1"></i>Agregar Servidor</button>
                                 </td>
                             </tr>
                         <?php else: ?>
@@ -193,7 +194,7 @@ $servidores = $pdo->query($query)->fetchAll();
                                     <td><code><?= e($srv['ruta_binario']) ?></code></td>
                                     <td>
                                         <?php if ($srv['ultimo_estado'] === 'online'): ?>
-                                            <span class="badge bg-success">Online</span>
+                                             <span class="badge bg-success">Online</span>
                                         <?php elseif ($srv['ultimo_estado'] === 'error'): ?>
                                             <span class="badge bg-danger">Error</span>
                                         <?php else: ?>
@@ -201,18 +202,22 @@ $servidores = $pdo->query($query)->fetchAll();
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-end pe-4">
-                                        <button type="button" class="btn btn-sm btn-outline-info me-1 btn-action" 
+                                        <button type="button" class="btn btn-sm btn-dark border border-secondary text-light me-1 btn-action" 
+                                            onclick="abrirTerminalSSH(<?= $srv['id'] ?>, '<?= e($srv['nombre']) ?>')" title="Terminal SSH">
+                                            <i class="fa-light fa-terminal me-1"></i>Terminal
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-info text-dark me-1 btn-action" 
                                             onclick='probarConexionServidor(<?= json_encode($srv) ?>)'>
                                             <i class="fa-light fa-network-wired me-1"></i>Probar
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-warning me-1 btn-action" 
+                                        <button type="button" class="btn btn-sm btn-warning text-dark me-1 btn-action" 
                                             onclick='editarServidor(<?= json_encode($srv) ?>)'>
                                             <i class="fa-light fa-pen-to-square me-1"></i>Editar
                                         </button>
                                         <form method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar este servidor?');">
                                             <input type="hidden" name="accion" value="eliminar">
                                             <input type="hidden" name="id" value="<?= $srv['id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger btn-action" title="Eliminar servidor">
+                                            <button type="submit" class="btn btn-sm btn-danger btn-action" title="Eliminar servidor">
                                                 <i class="fa-light fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -291,7 +296,7 @@ $servidores = $pdo->query($query)->fetchAll();
                 </div>
 
                 <div class="modal-footer border-secondary justify-content-between">
-                    <button type="button" class="btn btn-outline-info fw-bold" id="btnTestConexion" onclick="probarConexionForm()">
+                    <button type="button" class="btn btn-info text-dark fw-bold" id="btnTestConexion" onclick="probarConexionForm()">
                         <i class="fa-light fa-network-wired me-1"></i>Probar Conexión Ahora
                     </button>
                     <div>
@@ -306,6 +311,9 @@ $servidores = $pdo->query($query)->fetchAll();
 
 <script src="./js/bootstrap.bundle.min.js"></script>
 <script src="./js/app.js"></script>
+<script src="./js/xterm.js"></script>
+<script src="./js/xterm-addon-fit.js"></script>
+<script src="./js/terminal.js"></script>
 <script>
 const modalEl = document.getElementById('modalServidor');
 const bsModal = new bootstrap.Modal(modalEl);

@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-enable gd mysqli
 
 # Habilitamos módulos de Apache
-RUN a2enmod rewrite ssl socache_shmcb
+RUN a2enmod rewrite ssl socache_shmcb proxy proxy_wstunnel proxy_http
 
 # Generamos certificados SSL autofirmados
 RUN mkdir -p /etc/apache2/ssl \
@@ -23,10 +23,11 @@ RUN mkdir -p /etc/apache2/ssl \
     -out /etc/apache2/ssl/apache.crt \
     -subj "/C=AR/ST=Buenos Aires/L=CABA/O=Drawers/OU=IT/CN=drawers.com.ar"
 
-# Creamos una configuración de VirtualHost para SSL si no existe o usamos la por defecto
-# Nota: Como montamos ./apache_data:/etc/apache2 en compose.yml, 
-# los cambios manuales en el contenedor pueden ser sobrescritos por el volumen.
-# Es mejor asegurarse de que la configuración viva en el volumen.
+# Copiamos script de arranque
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Ajustamos permisos básicos
 RUN chown -R www-data:www-data /var/www/html
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

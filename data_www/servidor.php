@@ -74,6 +74,7 @@ $iconoSO = iconoDistroSO($soNombre);
     <link href="./css/bootstrap-color-extension.css" rel="stylesheet">
     <link href="./css/all.css" rel="stylesheet">
     <link href="./css/styles.css" rel="stylesheet">
+    <link href="./css/xterm.css" rel="stylesheet">
     <style>
         .progress { height: 22px; border-radius: 6px; }
         pre.json-viewer { max-height: 400px; padding: 1rem; border-radius: 6px; border: 1px solid var(--border-color); }
@@ -87,7 +88,7 @@ $iconoSO = iconoDistroSO($soNombre);
     <!-- Barra Superior -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <a href="index.php" class="btn btn-outline-secondary btn-sm mb-2"><i class="fa-light fa-arrow-left me-1"></i>Volver al Dashboard</a>
+            <a href="index.php" class="btn btn-secondary btn-sm mb-2"><i class="fa-light fa-arrow-left me-1"></i>Volver al Dashboard</a>
             <h1 class="h2 fw-bold text-light mb-0">
                 <i class="<?= $iconoSO ?> me-2"></i><?= e($servidor['nombre']) ?> 
                 <span class="badge bg-<?= $servidor['ultimo_estado'] === 'online' ? 'success' : 'danger' ?> fs-6 ms-2">
@@ -97,10 +98,13 @@ $iconoSO = iconoDistroSO($soNombre);
             <p class="text-secondary mb-0">Host: <code><?= e($servidor['host']) ?>:<?= e((string)$servidor['puerto']) ?></code> | Usuario: <code><?= e($servidor['usuario']) ?></code></p>
         </div>
         <div class="d-flex gap-2">
+            <button type="button" class="btn btn-dark border border-secondary text-light fw-bold px-3 py-2" onclick="abrirTerminalSSH(<?= $id ?>, '<?= e($servidor['nombre']) ?>')">
+                <i class="fa-light fa-terminal me-1 text-info"></i>Terminal SSH
+            </button>
             <a href="servidor.php?id=<?= $id ?>&sync=1" class="btn btn-primary fw-bold px-3 py-2">
                 <i class="fa-light fa-arrows-rotate me-1"></i>Refrescar Métricas
             </a>
-            <a href="config.php" class="btn btn-outline-warning fw-bold px-3 py-2">
+            <a href="config.php" class="btn btn-warning text-dark fw-bold px-3 py-2">
                 <i class="fa-light fa-pen-to-square me-1"></i>Editar Configuración
             </a>
         </div>
@@ -288,7 +292,7 @@ $iconoSO = iconoDistroSO($soNombre);
     <div class="card shadow-sm">
         <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
             <h2 class="h5 fw-bold text-light mb-0"><i class="fa-light fa-file-code me-2 text-primary"></i>JSON en Bruto de gosvrinfo</h2>
-            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseJson" aria-expanded="false">
+            <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseJson" aria-expanded="false">
                 Ver / Ocultar JSON
             </button>
         </div>
@@ -302,6 +306,9 @@ $iconoSO = iconoDistroSO($soNombre);
 
 <script src="./js/bootstrap.bundle.min.js"></script>
 <script src="./js/app.js"></script>
+<script src="./js/xterm.js"></script>
+<script src="./js/xterm-addon-fit.js"></script>
+<script src="./js/terminal.js"></script>
 <script>
 function sincronizarTodos() {
     window.location.href = 'index.php?sync_all=1';
