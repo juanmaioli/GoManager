@@ -7,6 +7,7 @@ let currentFitAddon = null;
 let currentWs = null;
 let currentServerId = null;
 let currentServerName = '';
+let currentTerminalFontSize = parseInt(localStorage.getItem('terminal_font_size')) || 14;
 
 function inicializarModalTerminal() {
     if (document.getElementById('modalTerminalSSH')) return;
@@ -15,7 +16,7 @@ function inicializarModalTerminal() {
     <div class="modal fade" id="modalTerminalSSH" tabindex="-1" aria-labelledby="modalTerminalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 95vw;">
             <div class="modal-content border-secondary shadow-lg" style="background-color: #0d1117; color: #c9d1d9;">
-                <div class="modal-header border-secondary py-2 px-3 d-flex justify-content-between align-items-center">
+                <div class="modal-header border-secondary py-2 px-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
                         <i class="fa-light fa-terminal text-info fs-5"></i>
                         <h5 class="modal-title fw-bold mb-0 text-light" id="modalTerminalLabel">Terminal SSH</h5>
@@ -23,6 +24,15 @@ function inicializarModalTerminal() {
                         <span class="badge bg-warning text-dark font-monospace" id="termStatusBadge">Iniciando...</span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
+                        <div class="btn-group" role="group" aria-label="Tamaño del texto">
+                            <button type="button" class="btn btn-sm btn-dark border border-secondary text-light fw-bold" onclick="cambiarTamanoFuenteTerminal(-1)" title="Disminuir texto (Ctrl+-)" aria-label="Disminuir tamaño de fuente">
+                                <i class="fa-light fa-magnifying-glass-minus"></i>
+                            </button>
+                            <span class="btn btn-sm btn-dark border border-secondary text-light fw-bold px-2 disabled font-monospace" id="termFontSizeBadge" style="opacity: 0.95;">${currentTerminalFontSize}px</span>
+                            <button type="button" class="btn btn-sm btn-dark border border-secondary text-light fw-bold" onclick="cambiarTamanoFuenteTerminal(1)" title="Aumentar texto (Ctrl++)" aria-label="Aumentar tamaño de fuente">
+                                <i class="fa-light fa-magnifying-glass-plus"></i>
+                            </button>
+                        </div>
                         <button type="button" class="btn btn-sm btn-dark border border-secondary text-light fw-bold" id="btnTerminalFullscreen" onclick="toggleTerminalFullscreen()" title="Pantalla completa (Alt+Enter)" aria-label="Pantalla completa">
                             <i class="fa-light fa-expand me-1"></i><span id="txtTerminalFullscreen">Maximizar</span>
                         </button>
@@ -40,7 +50,7 @@ function inicializarModalTerminal() {
                 </div>
                 <div class="modal-footer border-secondary py-1 px-3 justify-content-between text-secondary" style="font-size: 0.8rem;">
                     <div>
-                        <span class="me-3"><i class="fa-light fa-keyboard me-1"></i>Soporta copiar / pegar, atajos estándar, Ctrl+C y Alt+Enter (Pantalla completa)</span>
+                        <span class="me-3"><i class="fa-light fa-keyboard me-1"></i>Atajos: Ctrl++ / Ctrl+- (Tamaño), Ctrl+0 (Reset), Alt+Enter (Pantalla completa), Ctrl+C</span>
                         <span id="termDimensions">80x24</span>
                     </div>
                     <div>
@@ -150,7 +160,7 @@ async function conectarSSH() {
     currentTerm = new Terminal({
         cursorBlink: true,
         cursorStyle: 'block',
-        fontSize: 14,
+        fontSize: currentTerminalFontSize,
         fontFamily: '"CaskaydiaCove Nerd Font Mono", monospace',
         theme: {
             background: '#0d1117',
@@ -184,6 +194,27 @@ async function conectarSSH() {
     }
 
     currentTerm.open(container);
+
+    // Interceptar atajos de teclado para zoom y pantalla completa
+    currentTerm.attachCustomKeyEventHandler((e) => {
+        if (e.ctrlKey && (e.key === '=' || e.key === '+' || e.code === 'NumpadAdd')) {
+            if (e.type === 'keydown') cambiarTamanoFuenteTerminal(1);
+            return false;
+        }
+        if (e.ctrlKey && (e.key === '-' || e.code === 'NumpadSubtract')) {
+            if (e.type === 'keydown') cambiarTamanoFuenteTerminal(-1);
+            return false;
+        }
+        if (e.ctrlKey && (e.key === '0' || e.code === 'Numpad0')) {
+            if (e.type === 'keydown') resetTamanoFuenteTerminal();
+            return false;
+        }
+        if (e.altKey && e.key === 'Enter') {
+            if (e.type === 'keydown') toggleTerminalFullscreen();
+            return false;
+        }
+        return true;
+    });
 
     if (currentFitAddon) {
         currentFitAddon.fit();
@@ -333,4 +364,44 @@ function toggleTerminalFullscreen() {
         }
     }, 120);
 }
+
+function cambiarTamanoFuenteTerminal(delta) {
+    if (!currentTerm) return;
+    let newSize = currentTerminalFontSize + delta;
+    if (newSize < 11) newSize = 11;
+    if (newSize > 36) newSize = 36;
+    currentTerminalFontSize = newSize;
+    localStorage.setItem('terminal_font_size', currentTerminalFontSize);
+
+    currentTerm.options.fontSize = currentTerminalFontSize;
+    actualizarBadgeFuente();
+
+    if (currentFitAddon) {
+        currentFitAddon.fit();
+        currentTerm.focus();
+    }
+    actualizarDimensionesInfo();
+}
+
+function resetTamanoFuenteTerminal() {
+    if (!currentTerm) return;
+    currentTerminalFontSize = 14;
+    localStorage.setItem('terminal_font_size', 14);
+    currentTerm.options.fontSize = 14;
+    actualizarBadgeFuente();
+
+    if (currentFitAddon) {
+        currentFitAddon.fit();
+        currentTerm.focus();
+    }
+    actualizarDimensionesInfo();
+}
+
+function actualizarBadgeFuente() {
+    const badge = document.getElementById('termFontSizeBadge');
+    if (badge) {
+        badge.textContent = `${currentTerminalFontSize}px`;
+    }
+}
+
 

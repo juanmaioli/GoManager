@@ -14,7 +14,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 
 ## ✨ Características Principales
 
-- 💻 **Terminal SSH Embebida (WebTTY):** Consola PTY interactiva completa en el navegador vía WebSockets (`wss://`), renderizada con tipografía **CaskaydiaCove Nerd Font Mono**, modo **Pantalla Completa** (botón y atajo `Alt+Enter`), colores ANSI, atajos de teclado (`Ctrl+C`, `Ctrl+D`), soporte para editores (`nano`, `vim`, `htop`), ajuste dinámico de tamaño y tokens de sesión de un solo uso.
+- 💻 **Terminal SSH Embebida (WebTTY):** Consola PTY interactiva completa en el navegador vía WebSockets (`wss://`), renderizada con tipografía **CaskaydiaCove Nerd Font Mono**, modo **Pantalla Completa** (botón y atajo `Alt+Enter`), controles interactivos de **tamaño de texto** (botones de zoom, indicador en px, persistencia en `localStorage` y atajos `Ctrl++`/`Ctrl+-`/`Ctrl+0`), colores ANSI, atajos de teclado (`Ctrl+C`, `Ctrl+D`), soporte para editores (`nano`, `vim`, `htop`), ajuste dinámico de tamaño y tokens de sesión de un solo uso.
 - 🌓 **Selector de Tema Dinámico (Claro / Oscuro):** Conmutación instantánea mediante el atributo nativo `data-bs-theme`, persistencia local en `localStorage` y transiciones fluidas de color sin parpadeo (FOUC).
 - 🐧 **Identificación Visual de Distribuciones:** Detección automática del sistema operativo mostrando el logo oficial de la distribución Linux (Debian, Ubuntu, Fedora, CentOS, Arch, openSUSE, Raspberry Pi, etc.).
 - 🧭 **Menú Lateral Responsivo (Sidebar):** Barra de navegación fija izquierda, compacta y accesible, con transición fluida a menú offcanvas en dispositivos móviles y selector de tema integrado.
