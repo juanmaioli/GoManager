@@ -14,7 +14,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 
 ## ✨ Características Principales
 
-- 💻 **Terminal SSH Embebida (WebTTY):** Consola PTY interactiva completa en el navegador vía WebSockets (`wss://`), con colores ANSI, atajos de teclado (`Ctrl+C`, `Ctrl+D`), soporte para editores (`nano`, `vim`, `htop`), ajuste dinámico de tamaño y tokens de sesión de un solo uso.
+- 💻 **Terminal SSH Embebida (WebTTY):** Consola PTY interactiva completa en el navegador vía WebSockets (`wss://`), renderizada con tipografía **CaskaydiaCove Nerd Font Mono**, modo **Pantalla Completa** (botón y atajo `Alt+Enter`), colores ANSI, atajos de teclado (`Ctrl+C`, `Ctrl+D`), soporte para editores (`nano`, `vim`, `htop`), ajuste dinámico de tamaño y tokens de sesión de un solo uso.
 - 🌓 **Selector de Tema Dinámico (Claro / Oscuro):** Conmutación instantánea mediante el atributo nativo `data-bs-theme`, persistencia local en `localStorage` y transiciones fluidas de color sin parpadeo (FOUC).
 - 🐧 **Identificación Visual de Distribuciones:** Detección automática del sistema operativo mostrando el logo oficial de la distribución Linux (Debian, Ubuntu, Fedora, CentOS, Arch, openSUSE, Raspberry Pi, etc.).
 - 🧭 **Menú Lateral Responsivo (Sidebar):** Barra de navegación fija izquierda, compacta y accesible, con transición fluida a menú offcanvas en dispositivos móviles y selector de tema integrado.
@@ -97,7 +97,7 @@ Abrí el navegador e ingresá en:
     │   ├── xterm.js            # Motor de emulación de terminal
     │   ├── xterm-addon-fit.js  # Addon de auto-ajuste de dimensiones
     │   └── terminal.js         # Controlador cliente de la sesión SSH embebida
-    ├── webfonts/               # Fuentes vectoriales FontAwesome (WOFF2)
+    ├── webfonts/               # Fuentes FontAwesome y CaskaydiaCove Nerd Font Mono (TTF / WOFF2)
     ├── includes/               # Componentes compartidos del backend
     │   ├── db.php              # Conexión SQLite y esquema de tablas
     │   ├── ssh.php             # Conector SSH para ejecución remota

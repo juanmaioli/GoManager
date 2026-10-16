@@ -23,6 +23,9 @@ function inicializarModalTerminal() {
                         <span class="badge bg-warning text-dark font-monospace" id="termStatusBadge">Iniciando...</span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-dark border border-secondary text-light fw-bold" id="btnTerminalFullscreen" onclick="toggleTerminalFullscreen()" title="Pantalla completa (Alt+Enter)" aria-label="Pantalla completa">
+                            <i class="fa-light fa-expand me-1"></i><span id="txtTerminalFullscreen">Maximizar</span>
+                        </button>
                         <button type="button" class="btn btn-sm btn-info text-dark fw-bold" onclick="reconnectTerminal()" title="Reconectar">
                             <i class="fa-light fa-arrows-rotate me-1"></i>Reconectar
                         </button>
@@ -37,7 +40,7 @@ function inicializarModalTerminal() {
                 </div>
                 <div class="modal-footer border-secondary py-1 px-3 justify-content-between text-secondary" style="font-size: 0.8rem;">
                     <div>
-                        <span class="me-3"><i class="fa-light fa-keyboard me-1"></i>Soporta copiar / pegar, atajos estándar y Ctrl+C</span>
+                        <span class="me-3"><i class="fa-light fa-keyboard me-1"></i>Soporta copiar / pegar, atajos estándar, Ctrl+C y Alt+Enter (Pantalla completa)</span>
                         <span id="termDimensions">80x24</span>
                     </div>
                     <div>
@@ -63,7 +66,44 @@ function inicializarModalTerminal() {
     });
 
     modalEl.addEventListener('hidden.bs.modal', () => {
+        if (modalEl.classList.contains('is-fullscreen')) {
+            modalEl.classList.remove('is-fullscreen');
+            const btn = document.getElementById('btnTerminalFullscreen');
+            const icon = btn ? btn.querySelector('i') : null;
+            const txt = document.getElementById('txtTerminalFullscreen');
+            if (icon) icon.className = 'fa-light fa-expand me-1';
+            if (txt) txt.textContent = 'Maximizar';
+            if (btn) btn.title = 'Pantalla completa (Alt+Enter)';
+            if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
         cerrarTerminalSSH();
+    });
+
+    modalEl.addEventListener('keydown', (e) => {
+        if (e.altKey && e.key === 'Enter') {
+            e.preventDefault();
+            toggleTerminalFullscreen();
+        }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && modalEl.classList.contains('is-fullscreen')) {
+            modalEl.classList.remove('is-fullscreen');
+            const btn = document.getElementById('btnTerminalFullscreen');
+            const icon = btn ? btn.querySelector('i') : null;
+            const txt = document.getElementById('txtTerminalFullscreen');
+            if (icon) icon.className = 'fa-light fa-expand me-1';
+            if (txt) txt.textContent = 'Maximizar';
+            if (btn) btn.title = 'Pantalla completa (Alt+Enter)';
+            setTimeout(() => {
+                if (currentFitAddon && currentTerm) {
+                    currentFitAddon.fit();
+                    actualizarDimensionesInfo();
+                }
+            }, 100);
+        }
     });
 
     window.addEventListener('resize', () => {
@@ -94,15 +134,24 @@ async function abrirTerminalSSH(serverId, serverNombre) {
 async function conectarSSH() {
     cerrarTerminalSSH(false);
 
+    // Asegurar carga de la tipografía personalizada para evitar desalineación de glifos
+    if (document.fonts) {
+        try {
+            await document.fonts.load('14px "CaskaydiaCove Nerd Font Mono"');
+        } catch (e) {
+            console.warn('Error cargando tipografía de terminal:', e);
+        }
+    }
+
     const container = document.getElementById('terminal-box');
     container.innerHTML = '';
 
-    // Crear instancia xterm.js
+    // Crear instancia xterm.js con CaskaydiaCove Nerd Font Mono
     currentTerm = new Terminal({
         cursorBlink: true,
         cursorStyle: 'block',
         fontSize: 14,
-        fontFamily: 'Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+        fontFamily: '"CaskaydiaCove Nerd Font Mono", monospace',
         theme: {
             background: '#0d1117',
             foreground: '#c9d1d9',
@@ -250,3 +299,38 @@ function cerrarTerminalSSH(resetIds = true) {
         currentServerName = '';
     }
 }
+
+function toggleTerminalFullscreen() {
+    const modalEl = document.getElementById('modalTerminalSSH');
+    if (!modalEl) return;
+
+    const isFs = modalEl.classList.toggle('is-fullscreen');
+    const btn = document.getElementById('btnTerminalFullscreen');
+    const icon = btn ? btn.querySelector('i') : null;
+    const txt = document.getElementById('txtTerminalFullscreen');
+
+    if (isFs) {
+        if (icon) icon.className = 'fa-light fa-compress me-1';
+        if (txt) txt.textContent = 'Restaurar';
+        if (btn) btn.title = 'Restaurar tamaño (Alt+Enter)';
+        if (modalEl.requestFullscreen && !document.fullscreenElement) {
+            modalEl.requestFullscreen().catch(() => {});
+        }
+    } else {
+        if (icon) icon.className = 'fa-light fa-expand me-1';
+        if (txt) txt.textContent = 'Maximizar';
+        if (btn) btn.title = 'Pantalla completa (Alt+Enter)';
+        if (document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+        }
+    }
+
+    setTimeout(() => {
+        if (currentFitAddon && currentTerm) {
+            currentFitAddon.fit();
+            currentTerm.focus();
+            actualizarDimensionesInfo();
+        }
+    }, 120);
+}
+

@@ -32,10 +32,22 @@
  */
 
 /**
+ *  Fuente CaskaydiaCove Nerd Font Mono para GoManager WebTTY
+ */
+@font-face {
+    font-family: 'CaskaydiaCove Nerd Font Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../webfonts/CaskaydiaCoveNerdFontMono-Regular.ttf') format('truetype');
+}
+
+/**
  *  Default styles for xterm.js
  */
 
 .xterm {
+    font-family: 'CaskaydiaCove Nerd Font Mono', monospace;
     cursor: text;
     position: relative;
     user-select: none;
@@ -206,4 +218,35 @@
 .xterm-decoration-top {
     z-index: 2;
     position: relative;
+}
+
+/* Modo Pantalla Completa para Modal Terminal */
+#modalTerminalSSH.is-fullscreen .modal-dialog {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#modalTerminalSSH.is-fullscreen .modal-content {
+    height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    display: flex;
+    flex-direction: column;
+}
+
+#modalTerminalSSH.is-fullscreen .modal-body {
+    flex: 1 1 auto !important;
+    height: calc(100vh - 84px) !important;
+    padding: 6px !important;
+    overflow: hidden;
+}
+
+#modalTerminalSSH.is-fullscreen #terminal-box {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
 }
