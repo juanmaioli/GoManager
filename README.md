@@ -24,7 +24,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 - 📦 **Recursos 100% Locales (Offline):** Dependencias completas en el proyecto (Bootstrap 5.3, Xterm.js, extensiones de color, FontAwesome 7 Pro y fuentes vectoriales WOFF2) sin llamadas a CDNs externos.
 - 🔑 **Autenticación Dual SSH:** Soporte para clave privada (RSA, Ed25519, PEM) o usuario y contraseña (`sshpass`).
 - 🔍 **Detalle Técnico Exhaustivo:** Vista profunda de cada equipo con métricas de CPU, memoria, tarjetas gráficas (GPU/VRAM), almacenamiento particionado e interfaces de red.
-- ⚙️ **Administración (ABM):** Gestión ágil de servidores con herramienta incorporada para **probar conexión SSH**, instalar el cliente remoto y abrir terminal directa antes de guardar cambios.
+- ⚙️ **Administración (ABM):** Gestión ágil de servidores con ordenamiento alfabético (A-Z) por nombre, herramienta incorporada para **probar conexión SSH**, instalar el cliente remoto y abrir terminal directa antes de guardar cambios.
 - ⏱️ **Auto-chequeo Periódico desde la Web:** Selector configurable en la barra lateral (Desactivado, 1, 5, 10 y 15 min) con cuenta regresiva en vivo, persistencia en `localStorage`, pausa automática inteligente si la terminal SSH está abierta y botón de ejecución manual directa.
 - 🔄 **Sincronización Flexible:** Actualización en lote por AJAX (`api/sync_all.php`), individual bajo demanda y modo CLI (`sync_cli.php`) para tareas programadas (cron).
 - 🕒 **Normalización de Hora Local:** Conversión transparente de marcas temporales UTC de SQLite a hora oficial argentina (`America/Argentina/Buenos_Aires`) en dashboard, detalles y configuración.

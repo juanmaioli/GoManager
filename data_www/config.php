@@ -96,7 +96,7 @@ $query = "
     LEFT JOIN metricas m ON m.id = (
         SELECT id FROM metricas WHERE servidor_id = s.id ORDER BY id DESC LIMIT 1
     )
-    ORDER BY s.id DESC
+    ORDER BY s.nombre COLLATE NOCASE ASC
 ";
 $servidores = $pdo->query($query)->fetchAll();
 
