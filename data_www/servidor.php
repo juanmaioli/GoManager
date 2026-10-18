@@ -165,15 +165,18 @@ $iconoSO = iconoDistroSO($soNombre);
             </h1>
             <p class="text-secondary mb-0">Host: <code><?= e($servidor['host']) ?>:<?= e((string)$servidor['puerto']) ?></code> | Usuario: <code><?= e($servidor['usuario']) ?></code> | Último chequeo: <strong class="text-light"><i class="fa-light fa-clock me-1"></i><?= formatearFechaLocal($servidor['ultimo_check']) ?></strong></p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
             <button type="button" class="btn btn-dark border border-secondary text-light fw-bold px-3 py-2" onclick="abrirTerminalSSH(<?= $id ?>, '<?= e($servidor['nombre']) ?>')">
-                <i class="fa-light fa-terminal me-1 text-info"></i>Terminal SSH
+                <i class="fa-light fa-terminal me-1 text-info"></i>Ssh
             </button>
             <a href="servidor.php?id=<?= $id ?>&sync=1" class="btn btn-primary fw-bold px-3 py-2">
-                <i class="fa-light fa-arrows-rotate me-1"></i>Refrescar Métricas
+                <i class="fa-light fa-arrows-rotate me-1"></i>Recargar
             </a>
-            <button type="button" class="btn btn-warning text-dark fw-bold px-3 py-2" onclick="abrirModalEditarServidor()">
-                <i class="fa-light fa-pen-to-square me-1"></i>Editar Configuración
+            <button type="button" class="btn btn-darkmagenta fw-bold px-3 py-2" onclick="abrirModalEditarServidor()">
+                <i class="fa-light fa-pen-to-square me-1"></i>Configurar
+            </button>
+            <button type="button" class="btn btn-purple fw-bold px-3 py-2" id="btnInstalarCliente" onclick="abrirModalInstalarCliente()">
+                <i class="fa-light fa-cloud-arrow-up me-1"></i>Instalar gosvrinfo
             </button>
         </div>
     </div>
@@ -436,14 +439,9 @@ $iconoSO = iconoDistroSO($soNombre);
                 </div>
 
                 <div class="modal-footer border-secondary justify-content-between flex-wrap gap-2">
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-info text-dark fw-bold" id="btnTestConexion" onclick="probarConexionForm()">
-                            <i class="fa-light fa-network-wired me-1"></i>Probar Conexión Ahora
-                        </button>
-                        <button type="button" class="btn btn-dark border border-secondary text-light fw-bold" id="btnInstalarCliente" onclick="abrirModalInstalarCliente()">
-                            <i class="fa-light fa-cloud-arrow-up me-1 text-info"></i>Instalar gosvrinfo
-                        </button>
-                    </div>
+                    <button type="button" class="btn btn-info text-dark fw-bold" id="btnTestConexion" onclick="probarConexionForm()">
+                        <i class="fa-light fa-network-wired me-1"></i>Probar Conexión Ahora
+                    </button>
                     <div>
                         <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary fw-bold px-4">Guardar Cambios</button>
@@ -462,7 +460,7 @@ $iconoSO = iconoDistroSO($soNombre);
                 <h5 class="modal-title fw-bold text-light" id="modalInstalarClienteLabel">
                     <i class="fa-light fa-cloud-arrow-up text-info me-2"></i>Instalar gosvrinfo
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" onclick="volverModalServidor()"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body p-4">
                 <p class="text-secondary small mb-3">
@@ -500,8 +498,8 @@ $iconoSO = iconoDistroSO($soNombre);
                 <div id="resultadoScp" class="d-none alert mb-0" role="alert"></div>
             </div>
             <div class="modal-footer border-secondary justify-content-between">
-                <button type="button" class="btn btn-secondary" onclick="volverModalServidor()">
-                    <i class="fa-light fa-arrow-left me-1"></i>Volver
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa-light fa-xmark me-1"></i>Cerrar
                 </button>
                 <button type="button" class="btn btn-primary fw-bold" id="btnEjecutarScp" onclick="ejecutarTransferenciaScp()">
                     <i class="fa-light fa-paper-plane me-1"></i>Copiar con SCP
@@ -641,7 +639,9 @@ function abrirModalInstalarCliente() {
     resScp.innerHTML = '';
     document.getElementById('btnEjecutarScp').disabled = false;
 
-    bsModal.hide();
+    if (typeof bsModal !== 'undefined' && bsModal) {
+        bsModal.hide();
+    }
     bsModalScp.show();
 }
 
