@@ -40,8 +40,11 @@ $onlineServidores = 0;
 $errorServidores = 0;
 
 foreach ($servidores as $srv) {
-    if ($srv['ultimo_estado'] === 'online') $onlineServidores++;
-    elseif ($srv['ultimo_estado'] === 'error') $errorServidores++;
+    if ($srv['ultimo_estado'] === 'online') {
+        $onlineServidores++;
+    } else {
+        $errorServidores++;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -66,6 +69,35 @@ foreach ($servidores as $srv) {
         .progress { height: 18px; border-radius: 6px; }
         .metric-label { font-size: 0.95rem; font-weight: 600; }
         .metric-val { font-size: 0.95rem; font-weight: 700; }
+
+        .metric-filter-card {
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            user-select: none;
+        }
+        .metric-filter-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3) !important;
+        }
+        .metric-filter-card:focus-visible {
+            outline: 2px solid var(--focus-ring-color, #38bdf8);
+            outline-offset: 2px;
+        }
+        .metric-filter-card.active-filter {
+            transform: translateY(-2px);
+        }
+        .metric-filter-card[data-filtro="todos"].active-filter {
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 0 2px #38bdf8, 0 8px 20px rgba(56, 189, 248, 0.25) !important;
+        }
+        .metric-filter-card[data-filtro="online"].active-filter {
+            border-color: #198754 !important;
+            box-shadow: 0 0 0 2px #198754, 0 8px 20px rgba(25, 135, 84, 0.25) !important;
+        }
+        .metric-filter-card[data-filtro="alertas"].active-filter {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 2px #dc3545, 0 8px 20px rgba(220, 53, 69, 0.25) !important;
+        }
     </style>
 </head>
 <body>
@@ -74,10 +106,10 @@ foreach ($servidores as $srv) {
 
 <main class="container-fluid px-3 px-md-4 py-4 app-main">
 
-    <!-- Métricas Globales -->
+    <!-- Métricas Globales (Filtros Interactivos) -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="card p-3 shadow-sm border-secondary">
+            <div class="card p-3 shadow-sm border-secondary metric-filter-card active-filter" role="button" tabindex="0" data-filtro="todos" aria-pressed="true" title="Mostrar todos los equipos">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-secondary small fw-bold text-uppercase">Total Equipos</div>
@@ -88,7 +120,7 @@ foreach ($servidores as $srv) {
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card p-3 shadow-sm border-success">
+            <div class="card p-3 shadow-sm border-success metric-filter-card" role="button" tabindex="0" data-filtro="online" aria-pressed="false" title="Filtrar solo equipos online">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-success small fw-bold text-uppercase">Online</div>
@@ -99,7 +131,7 @@ foreach ($servidores as $srv) {
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card p-3 shadow-sm border-danger">
+            <div class="card p-3 shadow-sm border-danger metric-filter-card" role="button" tabindex="0" data-filtro="alertas" aria-pressed="false" title="Filtrar equipos con alertas u offline">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-danger small fw-bold text-uppercase">Con Alertas / Offline</div>
@@ -113,7 +145,13 @@ foreach ($servidores as $srv) {
 
     <!-- Encabezado de Sección -->
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h2 class="h3 fw-bold text-light mb-0">Servidores Monitoreados</h2>
+        <div class="d-flex align-items-center gap-2">
+            <h2 class="h3 fw-bold text-light mb-0">Servidores Monitoreados</h2>
+            <span id="filtroActualBadge" class="badge bg-secondary d-none"></span>
+            <button id="btnLimpiarFiltro" class="btn btn-sm btn-outline-secondary d-none py-0 px-2" onclick="aplicarFiltro('todos')" title="Quitar filtro">
+                <i class="fa-light fa-xmark me-1"></i>Ver todos
+            </button>
+        </div>
         <div>
             <a href="config.php" class="btn btn-primary fw-bold btn-sm px-3 py-2">
                 <i class="fa-light fa-plus me-1"></i>Agregar Equipo
@@ -146,7 +184,7 @@ foreach ($servidores as $srv) {
                 $soNombre = $data['operating_system']['name'] ?? '';
                 $iconoSO = iconoDistroSO($soNombre);
             ?>
-                <div class="col-12 col-md-6 col-lg-4 col-xl-3" id="card-srv-<?= $srv['id'] ?>">
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 server-card-item" id="card-srv-<?= $srv['id'] ?>" data-estado="<?= e($estado) ?>">
                     <div class="card h-100 shadow-sm card-server">
                         <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
                             <div>
@@ -213,6 +251,18 @@ foreach ($servidores as $srv) {
                     </div>
                 </div>
             <?php endforeach; ?>
+            <div id="noResultadosFiltro" class="col-12 text-center py-5 d-none">
+                <div class="card p-4 shadow-sm border-secondary mx-auto" style="max-width: 500px;">
+                    <div class="fs-1 mb-2 text-secondary"><i class="fa-light fa-filter-circle-xmark"></i></div>
+                    <h4 class="h5 text-light fw-bold">No hay servidores en esta categoría</h4>
+                    <p class="text-secondary mb-3">No se encontraron equipos que coincidan con el filtro seleccionado.</p>
+                    <div>
+                        <button type="button" class="btn btn-outline-info btn-sm fw-bold px-3 py-2" onclick="aplicarFiltro('todos')">
+                            <i class="fa-light fa-arrows-rotate me-1"></i>Mostrar todos los servidores
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     <?php endif; ?>
 </main>
@@ -251,6 +301,87 @@ async function refrescarServidor(id, btn) {
 function sincronizarTodos() {
     window.location.href = 'index.php?sync_all=1';
 }
+
+// Filtrado interactivo por tarjetas de métricas
+let filtroActivo = 'todos';
+
+function aplicarFiltro(tipo) {
+    if (filtroActivo === tipo && tipo !== 'todos') {
+        tipo = 'todos';
+    }
+    filtroActivo = tipo;
+
+    const cards = document.querySelectorAll('.metric-filter-card');
+    cards.forEach(card => {
+        const esActivo = card.dataset.filtro === tipo;
+        card.classList.toggle('active-filter', esActivo);
+        card.setAttribute('aria-pressed', esActivo ? 'true' : 'false');
+    });
+
+    const items = document.querySelectorAll('.server-card-item');
+    let visibles = 0;
+
+    items.forEach(item => {
+        const estado = item.dataset.estado;
+        let mostrar = false;
+        if (tipo === 'todos') {
+            mostrar = true;
+        } else if (tipo === 'online') {
+            mostrar = (estado === 'online');
+        } else if (tipo === 'alertas') {
+            mostrar = (estado !== 'online');
+        }
+
+        if (mostrar) {
+            item.classList.remove('d-none');
+            visibles++;
+        } else {
+            item.classList.add('d-none');
+        }
+    });
+
+    const noResultados = document.getElementById('noResultadosFiltro');
+    if (noResultados) {
+        if (visibles === 0 && items.length > 0) {
+            noResultados.classList.remove('d-none');
+        } else {
+            noResultados.classList.add('d-none');
+        }
+    }
+
+    const badge = document.getElementById('filtroActualBadge');
+    const btnLimpiar = document.getElementById('btnLimpiarFiltro');
+    if (badge && btnLimpiar) {
+        if (tipo === 'todos') {
+            badge.classList.add('d-none');
+            btnLimpiar.classList.add('d-none');
+        } else {
+            badge.classList.remove('d-none');
+            btnLimpiar.classList.remove('d-none');
+            if (tipo === 'online') {
+                badge.className = 'badge bg-success';
+                badge.textContent = `Mostrando: Online (${visibles})`;
+            } else {
+                badge.className = 'badge bg-danger';
+                badge.textContent = `Mostrando: Con Alertas / Offline (${visibles})`;
+            }
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.metric-filter-card').forEach(card => {
+        card.addEventListener('click', () => {
+            aplicarFiltro(card.dataset.filtro);
+        });
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                aplicarFiltro(card.dataset.filtro);
+            }
+        });
+    });
+});
 </script>
 </body>
 </html>
