@@ -144,7 +144,7 @@ function registrarFalloServidor(PDO $pdo, int $servidorId, string $motivo = 'Err
 
     $stmtUpd = $pdo->prepare("
         UPDATE servidores 
-        SET ultimo_estado = 'error', ultimo_check = CURRENT_TIMESTAMP 
+        SET ultimo_estado = 'error' 
         WHERE id = :id
     ");
     $stmtUpd->execute([':id' => $servidorId]);
