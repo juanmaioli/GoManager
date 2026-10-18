@@ -42,6 +42,18 @@ try {
         );
 
         CREATE INDEX IF NOT EXISTS idx_metricas_servidor ON metricas(servidor_id);
+
+        CREATE TABLE IF NOT EXISTS incidentes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            servidor_id INTEGER NOT NULL,
+            desconectado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            reconectado_en DATETIME NULL,
+            duracion_segundos INTEGER NULL,
+            motivo TEXT NULL,
+            FOREIGN KEY (servidor_id) REFERENCES servidores(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_incidentes_servidor ON incidentes(servidor_id);
     ");
 
 } catch (PDOException $e) {

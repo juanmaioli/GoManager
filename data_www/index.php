@@ -15,8 +15,7 @@ if (isset($_GET['sync_all'])) {
         if ($res['success'] && is_array($res['data'])) {
             guardarMetricas($pdo, (int)$srv['id'], $res['data'], $res['output']);
         } else {
-            $stmtUpd = $pdo->prepare("UPDATE servidores SET ultimo_estado = 'error', ultimo_check = CURRENT_TIMESTAMP WHERE id = :id");
-            $stmtUpd->execute([':id' => $srv['id']]);
+            registrarFalloServidor($pdo, (int)$srv['id'], $res['error'] ?? 'Error de conexión');
         }
     }
     header('Location: index.php');

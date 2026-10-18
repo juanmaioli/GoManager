@@ -17,7 +17,7 @@ $mensaje = '';
 $tipoMensaje = 'info';
 
 // Procesar actualización desde el modal
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guardar') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && ($_POST['accion'] ?? '') === 'guardar') {
     $nombre = trim($_POST['nombre'] ?? '');
     $host = trim($_POST['host'] ?? '');
     $puerto = (int)($_POST['puerto'] ?? 22);
@@ -70,6 +70,8 @@ if (isset($_GET['sync'])) {
         $res = ejecutarSSH($srvData, $srvData['ruta_binario'], 8);
         if ($res['success'] && is_array($res['data'])) {
             guardarMetricas($pdo, $id, $res['data'], $res['output']);
+        } else {
+            registrarFalloServidor($pdo, $id, $res['error'] ?? 'Error de conexión');
         }
     }
     header("Location: servidor.php?id={$id}");
@@ -84,6 +86,32 @@ $servidor = $stmt->fetch();
 if (!$servidor) {
     die("Servidor no encontrado.");
 }
+
+// Si el servidor está en estado error pero no tiene incidente abierto registrado, crearlo
+if ($servidor['ultimo_estado'] === 'error') {
+    $stmtCheckInc = $pdo->prepare("SELECT id FROM incidentes WHERE servidor_id = :id AND reconectado_en IS NULL");
+    $stmtCheckInc->execute([':id' => $id]);
+    if (!$stmtCheckInc->fetch()) {
+        $stmtInitInc = $pdo->prepare("
+            INSERT INTO incidentes (servidor_id, desconectado_en, motivo)
+            VALUES (:id, :fecha, 'Desconexión detectada')
+        ");
+        $stmtInitInc->execute([
+            ':id' => $id,
+            ':fecha' => $servidor['ultimo_check'] ?? date('Y-m-d H:i:s')
+        ]);
+    }
+}
+
+// Consultar incidentes del servidor
+$stmtIncidentes = $pdo->prepare("
+    SELECT * FROM incidentes 
+    WHERE servidor_id = :id 
+    ORDER BY id DESC 
+    LIMIT 20
+");
+$stmtIncidentes->execute([':id' => $id]);
+$incidentes = $stmtIncidentes->fetchAll();
 
 // Escanear dinámicamente los binarios disponibles en ./clientes
 $clientesDir = __DIR__ . '/clientes';
@@ -175,204 +203,244 @@ $iconoSO = iconoDistroSO($soNombre);
             <button type="button" class="btn btn-darkmagenta fw-bold px-3 py-2" onclick="abrirModalEditarServidor()">
                 <i class="fa-light fa-pen-to-square me-1"></i>Configurar
             </button>
+            <button type="button" class="btn btn-night fw-bold px-3 py-2" onclick="abrirModalJson()">
+                <i class="fa-light fa-file-code me-1"></i>Json
+            </button>
             <button type="button" class="btn btn-purple fw-bold px-3 py-2" id="btnInstalarCliente" onclick="abrirModalInstalarCliente()">
                 <i class="fa-light fa-cloud-arrow-up me-1"></i>Instalar gosvrinfo
             </button>
         </div>
     </div>
 
-    <!-- Resumen Principal CPU / RAM / UPTIME -->
-    <div class="row g-4 mb-4">
-        <!-- CPU -->
-        <div class="col-md-4">
+    <!-- Resumen Principal en 5 Columnas: CPU, RAM, SO, Red, GPU -->
+    <div class="row g-3 g-xxl-4 mb-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5">
+        <!-- 1. CPU -->
+        <div class="col">
             <div class="card p-3 shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="fw-bold fs-5 text-light"><i class="fa-light fa-microchip me-2 text-primary"></i>Procesador (CPU)</span>
+                    <span class="fw-bold fs-5 text-light"><i class="fa-light fa-microchip me-2 text-primary"></i>CPU</span>
                     <span class="badge bg-<?= colorPorcentaje($cpuNum) ?> fs-6"><?= e((string)$cpuVal) ?></span>
                 </div>
                 <div class="progress mb-3">
                     <div class="progress-bar bg-<?= colorPorcentaje($cpuNum) ?>" style="width: <?= min(100, max(5, $cpuNum)) ?>%"></div>
                 </div>
                 <div class="small text-secondary">
-                    <div><strong>Modelo:</strong> <span class="text-light"><?= e($data['CPU'] ?? 'N/A') ?></span></div>
+                    <div><strong>Modelo:</strong> <span class="text-light text-truncate d-inline-block mw-100" title="<?= e($data['CPU'] ?? 'N/A') ?>"><?= e($data['CPU'] ?? 'N/A') ?></span></div>
                     <div><strong>Núcleos:</strong> <span class="text-light"><?= e((string)($data['cores'] ?? 'N/A')) ?></span></div>
                     <div><strong>Frecuencia:</strong> <span class="text-light"><?= e($data['cpu_speed'] ?? 'N/A') ?></span></div>
                 </div>
             </div>
         </div>
 
-        <!-- RAM -->
-        <div class="col-md-4">
+        <!-- 2. RAM -->
+        <div class="col">
             <div class="card p-3 shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="fw-bold fs-5 text-light"><i class="fa-light fa-memory me-2 text-primary"></i>Memoria RAM</span>
+                    <span class="fw-bold fs-5 text-light"><i class="fa-light fa-memory me-2 text-primary"></i>RAM</span>
                     <span class="badge bg-<?= colorPorcentaje($ramNum) ?> fs-6"><?= e((string)$ramVal) ?></span>
                 </div>
                 <div class="progress mb-3">
                     <div class="progress-bar bg-<?= colorPorcentaje($ramNum) ?>" style="width: <?= min(100, max(5, $ramNum)) ?>%"></div>
                 </div>
                 <div class="small text-secondary">
-                    <div><strong>Capacidad Total:</strong> <span class="text-light"><?= e($data['RAM'] ?? 'N/A') ?></span></div>
+                    <div><strong>Capacidad:</strong> <span class="text-light"><?= e($data['RAM'] ?? 'N/A') ?></span></div>
                     <div><strong>Uso Actual:</strong> <span class="text-light"><?= e((string)$ramVal) ?></span></div>
                 </div>
             </div>
         </div>
 
-        <!-- Sistema y Uptime -->
-        <div class="col-md-4">
+        <!-- 3. Sistema y Uptime -->
+        <div class="col">
             <div class="card p-3 shadow-sm h-100">
-                <div class="fw-bold fs-5 text-light mb-2"><i class="<?= $iconoSO ?> me-2"></i>Sistema Operativo</div>
-                <div class="fs-4 fw-bold text-info mb-2">
+                <div class="fw-bold fs-5 text-light mb-2"><i class="<?= $iconoSO ?> me-2"></i>Sistema</div>
+                <div class="fs-4 fw-bold text-info mb-2 text-truncate">
                     <i class="fa-light fa-clock me-1"></i><?= formatearUptime($data['system_uptime'] ?? $ultimaMetrica['uptime'] ?? null) ?>
                 </div>
                 <div class="small text-secondary">
-                    <div><strong>Distribución:</strong> <span class="text-light"><?= e($data['operating_system']['name'] ?? 'Linux') ?> <?= e($data['operating_system']['version'] ?? '') ?></span></div>
-                    <div><strong>Kernel:</strong> <code><?= e($data['operating_system']['kernel_version'] ?? 'N/A') ?></code></div>
-                    <div><strong>Hostname:</strong> <span class="text-light"><?= e($data['hostname'] ?? 'N/A') ?></span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ubicación, Red y GPU -->
-    <div class="row g-4 mb-4">
-        <!-- Geolocalización e ISP -->
-        <div class="col-md-6">
-            <div class="card p-3 shadow-sm h-100">
-                <h2 class="h5 fw-bold text-light mb-3"><i class="fa-light fa-globe me-2 text-primary"></i>Conectividad Pública</h2>
-                <div class="table-responsive">
-                    <table class="table table-sm table-borderless mb-0">
-                        <tr>
-                            <th class="text-secondary" style="width: 35%;">IP Pública:</th>
-                            <td class="text-light fw-bold font-monospace"><?= e($data['ip_public_address'] ?? 'N/A') ?></td>
-                        </tr>
-                        <tr>
-                            <th class="text-secondary">Proveedor (ISP):</th>
-                            <td class="text-light"><?= e($data['isp'] ?? 'N/A') ?></td>
-                        </tr>
-                        <tr>
-                            <th class="text-secondary">Ubicación:</th>
-                            <td class="text-light"><?= e($data['city'] ?? '') ?>, <?= e($data['country'] ?? '') ?></td>
-                        </tr>
-                        <tr>
-                            <th class="text-secondary">Zona Horaria:</th>
-                            <td class="text-light"><?= e($data['timezone'] ?? 'N/A') ?></td>
-                        </tr>
-                    </table>
+                    <div><strong>SO:</strong> <span class="text-light"><?= e($data['operating_system']['name'] ?? 'Linux') ?> <?= e($data['operating_system']['version'] ?? '') ?></span></div>
+                    <div><strong>Kernel:</strong> <code class="small"><?= e($data['operating_system']['kernel_version'] ?? 'N/A') ?></code></div>
+                    <div><strong>Host:</strong> <span class="text-light"><?= e($data['hostname'] ?? 'N/A') ?></span></div>
                 </div>
             </div>
         </div>
 
-        <!-- GPU si está presente -->
-        <div class="col-md-6">
+        <!-- 4. Conectividad Pública -->
+        <div class="col">
             <div class="card p-3 shadow-sm h-100">
-                <h2 class="h5 fw-bold text-light mb-3"><i class="fa-light fa-gamepad me-2 text-primary"></i>Tarjeta Gráfica (GPU)</h2>
+                <div class="fw-bold fs-5 text-light mb-2"><i class="fa-light fa-globe me-2 text-primary"></i>Conectividad</div>
+                <div class="fs-5 fw-bold text-light font-monospace mb-2 text-truncate" title="<?= e($data['ip_public_address'] ?? 'N/A') ?>">
+                    <?= e($data['ip_public_address'] ?? 'N/A') ?>
+                </div>
+                <div class="small text-secondary">
+                    <div><strong>ISP:</strong> <span class="text-light text-truncate d-inline-block mw-100" title="<?= e($data['isp'] ?? 'N/A') ?>"><?= e($data['isp'] ?? 'N/A') ?></span></div>
+                    <div><strong>Ubicación:</strong> <span class="text-light"><?= e($data['city'] ?? '') ?><?= !empty($data['country']) ? ', ' . e($data['country']) : '' ?></span></div>
+                    <div><strong>Zona:</strong> <span class="text-light"><?= e($data['timezone'] ?? 'N/A') ?></span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Tarjeta Gráfica (GPU) -->
+        <div class="col">
+            <div class="card p-3 shadow-sm h-100">
+                <div class="fw-bold fs-5 text-light mb-2"><i class="fa-light fa-gamepad me-2 text-primary"></i>Gráficos (GPU)</div>
                 <?php if (!empty($data['GPU']['name'])): ?>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-borderless mb-0">
-                            <tr>
-                                <th class="text-secondary" style="width: 35%;">Modelo:</th>
-                                <td class="text-light fw-bold"><?= e($data['GPU']['name']) ?></td>
-                            </tr>
-                            <tr>
-                                <th class="text-secondary">Memoria VRAM:</th>
-                                <td class="text-light"><?= e($data['GPU']['memory'] ?? 'N/A') ?></td>
-                            </tr>
-                            <tr>
-                                <th class="text-secondary">Driver:</th>
-                                <td class="text-light font-monospace"><?= e($data['GPU']['driver_version'] ?? 'N/A') ?></td>
-                            </tr>
-                        </table>
+                    <div class="fs-5 fw-bold text-light text-truncate mb-2" title="<?= e($data['GPU']['name']) ?>">
+                        <?= e($data['GPU']['name']) ?>
+                    </div>
+                    <div class="small text-secondary">
+                        <div><strong>VRAM:</strong> <span class="text-light"><?= e($data['GPU']['memory'] ?? 'N/A') ?></span></div>
+                        <div><strong>Driver:</strong> <code class="small"><?= e($data['GPU']['driver_version'] ?? 'N/A') ?></code></div>
                     </div>
                 <?php else: ?>
-                    <div class="text-secondary py-3 text-center">No se detectó GPU dedicada o acelerador gráfico.</div>
+                    <div class="text-secondary py-3 text-center small">
+                        <i class="fa-light fa-ban d-block fs-2 mb-1 opacity-50"></i>
+                        Sin GPU dedicada
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
     </div>
 
-    <!-- Almacenamiento Discos -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-transparent border-secondary py-3">
-            <h2 class="h5 fw-bold text-light mb-0"><i class="fa-light fa-hard-drive me-2 text-primary"></i>Almacenamiento y Discos</h2>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th class="ps-4">Dispositivo</th>
-                            <th>Tamaño Total</th>
-                            <th>Espacio Libre</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($data['disk_space']) && is_array($data['disk_space'])): ?>
-                            <?php foreach ($data['disk_space'] as $disk): ?>
+    <!-- Tablas: Almacenamiento y Red (Columna de mitad de ancho) -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-lg-6">
+            <!-- Almacenamiento Discos -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-transparent border-secondary py-3">
+                    <h2 class="h5 fw-bold text-light mb-0"><i class="fa-light fa-hard-drive me-2 text-primary"></i>Almacenamiento y Discos</h2>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark">
                                 <tr>
-                                    <td class="ps-4 font-monospace fw-bold text-light"><i class="fa-light fa-database text-secondary me-1"></i><?= e($disk['name']) ?></td>
-                                    <td><?= e($disk['size']) ?></td>
-                                    <td class="text-success fw-bold"><?= e($disk['free']) ?></td>
-                                    <td><span class="badge bg-success">Montado</span></td>
+                                    <th class="ps-4">Dispositivo</th>
+                                    <th>Tamaño Total</th>
+                                    <th>Espacio Libre</th>
+                                    <th>Estado</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr><td colspan="4" class="text-center text-secondary py-3">Sin información de discos.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($data['disk_space']) && is_array($data['disk_space'])): ?>
+                                    <?php foreach ($data['disk_space'] as $disk): ?>
+                                        <tr>
+                                            <td class="ps-4 font-monospace fw-bold text-light"><i class="fa-light fa-database text-secondary me-1"></i><?= e($disk['name']) ?></td>
+                                            <td><?= e($disk['size']) ?></td>
+                                            <td class="text-success fw-bold"><?= e($disk['free']) ?></td>
+                                            <td><span class="badge bg-success">Montado</span></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="4" class="text-center text-secondary py-3">Sin información de discos.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interfaces de Red -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-transparent border-secondary py-3">
+                    <h2 class="h5 fw-bold text-light mb-0"><i class="fa-light fa-network-wired me-2 text-primary"></i>Interfaces de Red</h2>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="ps-4">Interfaz</th>
+                                    <th>Dirección IP</th>
+                                    <th>Dirección MAC</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($data['network_interfaces']) && is_array($data['network_interfaces'])): ?>
+                                    <?php foreach ($data['network_interfaces'] as $net): ?>
+                                        <tr>
+                                            <td class="ps-4 font-monospace fw-bold text-light"><i class="fa-light fa-globe text-secondary me-1"></i><?= e($net['name']) ?></td>
+                                            <td class="font-monospace text-info"><?= !empty($net['ip_address']) ? e($net['ip_address']) : '<span class="text-secondary">-</span>' ?></td>
+                                            <td class="font-monospace text-secondary"><?= e($net['mac_address']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="3" class="text-center text-secondary py-3">Sin interfaces de red registradas.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Tabla Incidentes -->
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
+                    <h2 class="h5 fw-bold text-light mb-0">
+                        <i class="fa-light fa-triangle-exclamation me-2 text-warning"></i>Historial de Incidentes
+                    </h2>
+                    <span class="badge bg-secondary"><?= count($incidentes) ?> registros</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="ps-3">Estado</th>
+                                    <th>Desconectado</th>
+                                    <th>Volvió Online</th>
+                                    <th>Duración</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($incidentes)): ?>
+                                    <?php foreach ($incidentes as $inc): ?>
+                                        <tr>
+                                            <td class="ps-3">
+                                                <?php if (empty($inc['reconectado_en'])): ?>
+                                                    <span class="badge bg-danger"><i class="fa-light fa-circle-exclamation me-1"></i>Offline</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-success"><i class="fa-light fa-circle-check me-1"></i>Resuelto</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="small text-danger fw-bold">
+                                                <i class="fa-light fa-arrow-down-to-bracket me-1"></i><?= formatearFechaLocal($inc['desconectado_en']) ?>
+                                            </td>
+                                            <td class="small">
+                                                <?php if (!empty($inc['reconectado_en'])): ?>
+                                                    <span class="text-success fw-bold">
+                                                        <i class="fa-light fa-arrow-up-from-bracket me-1"></i><?= formatearFechaLocal($inc['reconectado_en']) ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="text-secondary fst-italic">Aún desconectado</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="small font-monospace">
+                                                <?php if (!empty($inc['reconectado_en'])): ?>
+                                                    <span class="text-light"><?= formatearDuracion((int)$inc['duracion_segundos']) ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-warning fw-bold"><i class="fa-light fa-spinner fa-spin me-1"></i>En curso</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-secondary py-5">
+                                            <i class="fa-light fa-shield-check d-block fs-1 mb-2 text-success opacity-75"></i>
+                                            Sin incidentes registrados. Equipo 100% operativo.
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Interfaces de Red -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-transparent border-secondary py-3">
-            <h2 class="h5 fw-bold text-light mb-0"><i class="fa-light fa-network-wired me-2 text-primary"></i>Interfaces de Red</h2>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th class="ps-4">Interfaz</th>
-                            <th>Dirección IP</th>
-                            <th>Dirección MAC</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($data['network_interfaces']) && is_array($data['network_interfaces'])): ?>
-                            <?php foreach ($data['network_interfaces'] as $net): ?>
-                                <tr>
-                                    <td class="ps-4 font-monospace fw-bold text-light"><i class="fa-light fa-globe text-secondary me-1"></i><?= e($net['name']) ?></td>
-                                    <td class="font-monospace text-info"><?= !empty($net['ip_address']) ? e($net['ip_address']) : '<span class="text-secondary">-</span>' ?></td>
-                                    <td class="font-monospace text-secondary"><?= e($net['mac_address']) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr><td colspan="3" class="text-center text-secondary py-3">Sin interfaces de red registradas.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Payload JSON en Bruto -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
-            <h2 class="h5 fw-bold text-light mb-0"><i class="fa-light fa-file-code me-2 text-primary"></i>JSON en Bruto de gosvrinfo</h2>
-            <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseJson" aria-expanded="false">
-                Ver / Ocultar JSON
-            </button>
-        </div>
-        <div class="collapse" id="collapseJson">
-            <div class="card-body p-3">
-                <pre class="json-viewer mb-0 font-monospace"><?= e(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></pre>
-            </div>
-        </div>
-    </div>
 </main>
 
 <!-- Modal Editar Servidor -->
@@ -551,6 +619,31 @@ $iconoSO = iconoDistroSO($soNombre);
     </div>
 </div>
 
+<!-- Modal JSON en Bruto -->
+<div class="modal fade" id="modalJsonBruto" tabindex="-1" aria-labelledby="modalJsonBrutoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content card border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold text-light" id="modalJsonBrutoLabel">
+                    <i class="fa-light fa-file-code text-primary me-2"></i>JSON en Bruto de gosvrinfo: <?= e($servidor['nombre']) ?>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-3">
+                <pre class="json-viewer mb-0 font-monospace" style="max-height: 70vh;"><?= e(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></pre>
+            </div>
+            <div class="modal-footer border-secondary justify-content-between">
+                <button type="button" class="btn btn-outline-info btn-sm fw-bold" onclick="copiarJsonBruto(this)">
+                    <i class="fa-light fa-copy me-1"></i>Copiar JSON
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa-light fa-xmark me-1"></i>Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="./js/bootstrap.bundle.min.js"></script>
 <script src="./js/app.js"></script>
 <script src="./js/xterm.js"></script>
@@ -565,6 +658,13 @@ const bsModalScp = new bootstrap.Modal(modalScpEl);
 
 const modalInstruccionEl = document.getElementById('modalInstruccionCliente');
 const bsModalInstruccion = new bootstrap.Modal(modalInstruccionEl);
+
+const modalJsonEl = document.getElementById('modalJsonBruto');
+const bsModalJson = new bootstrap.Modal(modalJsonEl);
+
+function abrirModalJson() {
+    bsModalJson.show();
+}
 
 function abrirModalEditarServidor() {
     toggleAuthFields();
@@ -705,6 +805,21 @@ function abrirTerminalDesdeInstalacion() {
     if (srvId > 0) {
         bsModalInstruccion.hide();
         abrirTerminalSSH(srvId, srvNombre);
+    }
+}
+
+function copiarJsonBruto(btn) {
+    const jsonPre = document.querySelector('#modalJsonBruto pre');
+    if (jsonPre) {
+        navigator.clipboard.writeText(jsonPre.innerText).then(() => {
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-light fa-check me-1"></i>¡Copiado!';
+            btn.classList.replace('btn-outline-info', 'btn-success');
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.classList.replace('btn-success', 'btn-outline-info');
+            }, 2500);
+        });
     }
 }
 

@@ -28,8 +28,7 @@ foreach ($servidores as $srv) {
         guardarMetricas($pdo, (int)$srv['id'], $res['data'], $res['output']);
         echo "[OK] CPU: {$res['data']['cpu_usage']} | RAM: {$res['data']['ram_usage']}\n";
     } else {
-        $stmtUpd = $pdo->prepare("UPDATE servidores SET ultimo_estado = 'error', ultimo_check = CURRENT_TIMESTAMP WHERE id = :id");
-        $stmtUpd->execute([':id' => $srv['id']]);
+        registrarFalloServidor($pdo, (int)$srv['id'], $res['error'] ?? 'Error de conexión');
         echo "[ERROR] {$res['error']}\n";
     }
 }

@@ -40,13 +40,8 @@ if ($resultado['success'] && is_array($resultado['data'])) {
         'ultimo_check' => date('Y-m-d H:i:s')
     ]);
 } else {
-    // Registrar fallo de conexión
-    $stmtUpd = $pdo->prepare("
-        UPDATE servidores 
-        SET ultimo_estado = 'error', ultimo_check = CURRENT_TIMESTAMP 
-        WHERE id = :id
-    ");
-    $stmtUpd->execute([':id' => $servidorId]);
+    // Registrar fallo de conexión e incidente
+    registrarFalloServidor($pdo, $servidorId, $resultado['error'] ?? 'Error de conexión SSH');
 
     echo json_encode([
         'success' => false,

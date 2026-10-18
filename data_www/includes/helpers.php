@@ -69,7 +69,7 @@ function colorPorcentaje(string|int|float|null $porcentaje): string
 }
 
 /**
- * Inserta o actualiza las métricas de un servidor.
+ * Inserta o actualiza las métricas de un servidor y resuelve incidentes abiertos.
  */
 function guardarMetricas(PDO $pdo, int $servidorId, array $datos, string $rawJson): void
 {
@@ -89,6 +89,25 @@ function guardarMetricas(PDO $pdo, int $servidorId, array $datos, string $rawJso
         ':raw_json'    => $rawJson
     ]);
 
+    // Si había un incidente abierto, cerrarlo con la marca de tiempo actual
+    $stmtInc = $pdo->prepare("
+        SELECT id, desconectado_en FROM incidentes 
+        WHERE servidor_id = :id AND reconectado_en IS NULL 
+        ORDER BY id DESC LIMIT 1
+    ");
+    $stmtInc->execute([':id' => $servidorId]);
+    $incAbierto = $stmtInc->fetch();
+
+    if ($incAbierto) {
+        $stmtClose = $pdo->prepare("
+            UPDATE incidentes 
+            SET reconectado_en = CURRENT_TIMESTAMP,
+                duracion_segundos = CAST((strftime('%s', CURRENT_TIMESTAMP) - strftime('%s', desconectado_en)) AS INTEGER)
+            WHERE id = :id
+        ");
+        $stmtClose->execute([':id' => $incAbierto['id']]);
+    }
+
     // Actualizar estado del servidor
     $stmtUpd = $pdo->prepare("
         UPDATE servidores
@@ -96,6 +115,61 @@ function guardarMetricas(PDO $pdo, int $servidorId, array $datos, string $rawJso
         WHERE id = :id
     ");
     $stmtUpd->execute([':id' => $servidorId]);
+}
+
+/**
+ * Registra un fallo o desconexión del servidor y crea un incidente si no existe uno abierto.
+ */
+function registrarFalloServidor(PDO $pdo, int $servidorId, string $motivo = 'Error de conexión SSH'): void
+{
+    // Verificar si ya tiene un incidente abierto
+    $stmtCheck = $pdo->prepare("
+        SELECT id FROM incidentes 
+        WHERE servidor_id = :id AND reconectado_en IS NULL 
+        ORDER BY id DESC LIMIT 1
+    ");
+    $stmtCheck->execute([':id' => $servidorId]);
+    $abierto = $stmtCheck->fetch();
+
+    if (!$abierto) {
+        $stmtIns = $pdo->prepare("
+            INSERT INTO incidentes (servidor_id, desconectado_en, motivo)
+            VALUES (:id, CURRENT_TIMESTAMP, :motivo)
+        ");
+        $stmtIns->execute([
+            ':id' => $servidorId,
+            ':motivo' => $motivo
+        ]);
+    }
+
+    $stmtUpd = $pdo->prepare("
+        UPDATE servidores 
+        SET ultimo_estado = 'error', ultimo_check = CURRENT_TIMESTAMP 
+        WHERE id = :id
+    ");
+    $stmtUpd->execute([':id' => $servidorId]);
+}
+
+/**
+ * Formatea una duración en segundos a una cadena legible (ej. "2h 15m", "45s", "< 1m").
+ */
+function formatearDuracion(?int $segundos): string
+{
+    if ($segundos === null || $segundos <= 0) {
+        return '< 1 min';
+    }
+    $dias = intdiv($segundos, 86400);
+    $horas = intdiv($segundos % 86400, 3600);
+    $minutos = intdiv($segundos % 3600, 60);
+    $segs = $segundos % 60;
+
+    $partes = [];
+    if ($dias > 0) $partes[] = "{$dias}d";
+    if ($horas > 0) $partes[] = "{$horas}h";
+    if ($minutos > 0) $partes[] = "{$minutos}m";
+    if (empty($partes) || ($dias === 0 && $horas === 0)) $partes[] = "{$segs}s";
+
+    return implode(' ', $partes);
 }
 
 /**

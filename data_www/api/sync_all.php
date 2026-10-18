@@ -40,8 +40,7 @@ foreach ($servidores as $srv) {
             'ram' => $res['data']['ram_usage'] ?? '0%'
         ];
     } else {
-        $stmtUpd = $pdo->prepare("UPDATE servidores SET ultimo_estado = 'error', ultimo_check = CURRENT_TIMESTAMP WHERE id = :id");
-        $stmtUpd->execute([':id' => $srv['id']]);
+        registrarFalloServidor($pdo, (int)$srv['id'], $res['error'] ?? 'Error de conexión');
         $error++;
         $detalles[] = [
             'id' => (int)$srv['id'],

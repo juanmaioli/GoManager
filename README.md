@@ -15,6 +15,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 ## ✨ Características Principales
 
 - 🎛️ **Filtrado Interactivo en Tiempo Real:** Las tarjetas de métricas globales del dashboard ("Total Equipos", "Online", "Con Alertas / Offline") funcionan como filtros dinámicos con un clic o teclado (`Enter`/`Espacio`), con resaltado visual del estado activo, contador de equipos visibles y botón de restablecimiento rápido.
+- 📋 **Historial Autónomo de Incidentes:** Registro automático en SQLite de caídas de conexión (`desconectado_en`), resolución al volver online (`reconectado_en`) y cómputo de duración para auditoría y monitoreo de estabilidad.
 - 💻 **Terminal SSH Embebida (WebTTY):** Consola PTY interactiva completa en el navegador vía WebSockets (`wss://`), renderizada con tipografía **CaskaydiaCove Nerd Font Mono**, modo **Pantalla Completa** (botón y atajo `Alt+Enter`), controles interactivos de **tamaño de texto** (botones de zoom, indicador en px, persistencia en `localStorage` y atajos `Ctrl++`/`Ctrl+-`/`Ctrl+0`), colores ANSI, atajos de teclado (`Ctrl+C`, `Ctrl+D`), soporte para editores (`nano`, `vim`, `htop`), ajuste dinámico de tamaño y tokens de sesión de un solo uso.
 - 🚀 **Instalador Remoto de Clientes vía SCP:** Botón de acceso directo en la barra superior de cada servidor y en la configuración para transferir automáticamente el ejecutable `gosvrinfo` a `/tmp/gosvrinfo` en el servidor destino, con detección dinámica de binarios disponibles en `./clientes` (x86_64, arm64, etc.) y modal explicativo con el comando exacto para moverlo a `/usr/local/bin` con un solo clic.
 - 🌓 **Selector de Tema Dinámico (Claro / Oscuro):** Conmutación instantánea mediante el atributo nativo `data-bs-theme`, persistencia local en `localStorage` y transiciones fluidas de color sin parpadeo (FOUC).
@@ -24,12 +25,12 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 - 🎯 **Tarjetas Ultra-Compactas:** Diseño limpio con foco en CPU, RAM, IP pública y accesos directos por iconos con botones sólidos sin saturación de texto.
 - 📦 **Recursos 100% Locales (Offline):** Dependencias completas en el proyecto (Bootstrap 5.3, Xterm.js, extensiones de color, FontAwesome 7 Pro y fuentes vectoriales WOFF2) sin llamadas a CDNs externos.
 - 🔑 **Autenticación Dual SSH:** Soporte para clave privada (RSA, Ed25519, PEM) o usuario y contraseña (`sshpass`).
-- 🔍 **Detalle Técnico Exhaustivo:** Vista profunda de cada equipo con métricas de CPU, memoria, tarjetas gráficas (GPU/VRAM), almacenamiento particionado, interfaces de red, barra superior de acciones rápidas (`Ssh`, `Recargar`, `Configurar` e `Instalar gosvrinfo`) y **modal interactivo de edición directa** con prueba de conexión SSH.
+- 🔍 **Detalle Técnico Exhaustivo:** Fila principal de 5 tarjetas clave (CPU, RAM, Sistema, Conectividad, GPU), cuadrícula 50%/50% (Discos y Red vs Incidentes), barra de acciones rápidas (`Ssh`, `Recargar`, `Configurar`, `Json` en `btn-night` e `Instalar gosvrinfo`), modal flotante para JSON en bruto y edición directa con prueba de conexión SSH.
 - ⚙️ **Administración (ABM):** Gestión ágil de servidores con ordenamiento alfabético (A-Z) por nombre, herramienta incorporada para **probar conexión SSH**, instalar el cliente remoto y abrir terminal directa antes de guardar cambios.
 - ⏱️ **Auto-chequeo Periódico desde la Web:** Selector configurable en la barra lateral (Desactivado, 1, 5, 10 y 15 min) con cuenta regresiva en vivo, persistencia en `localStorage`, pausa automática inteligente si la terminal SSH está abierta y botón de ejecución manual directa.
 - 🔄 **Sincronización Flexible:** Actualización en lote por AJAX (`api/sync_all.php`), individual bajo demanda y modo CLI (`sync_cli.php`) para tareas programadas (cron).
 - 🕒 **Normalización de Hora Local:** Conversión transparente de marcas temporales UTC de SQLite a hora oficial argentina (`America/Argentina/Buenos_Aires`) en dashboard, detalles y configuración.
-- 🗄️ **Base de Datos Embebida:** SQLite con esquema relacional auto-inicializable y sin mantenimiento de servicios de base de datos externos.
+- 🗄️ **Base de Datos Embebida:** SQLite con esquema relacional auto-inicializable (`servidores`, `metricas`, `incidentes`) sin mantenimiento de servicios externos.
 
 ---
 
