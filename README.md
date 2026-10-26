@@ -6,7 +6,7 @@
 
 ## 📋 Descripción
 
-**GoManager SvrInfo** es una solución integral y ligera desarrollada en **PHP 8.3**, **Go** y **SQLite** sobre **Docker**, orientada al monitoreo centralizado y administración de infraestructura. Se conecta de forma remota y segura mediante SSH a cada equipo para ejecutar `gosvrinfo`, recolectando en tiempo real métricas de hardware, rendimiento y conectividad, e incorpora una **terminal SSH interactiva directa en el navegador** impulsada por un daemon WebSocket en Go y Xterm.js.
+**GoManager SvrInfo** es una solución integral y ligera desarrollada en **PHP 8.4**, **Go** y **SQLite** sobre **Docker**, orientada al monitoreo centralizado y administración de infraestructura. Se conecta de forma remota y segura mediante SSH a cada equipo para ejecutar `gosvrinfo`, recolectando en tiempo real métricas de hardware, rendimiento y conectividad, e incorpora una **terminal SSH interactiva directa en el navegador** impulsada por un daemon WebSocket en Go y Xterm.js.
 
 Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilidad** (Bootstrap 5.3, iconografía vectorial FontAwesome 7 `fa-light` y `fa-brands`), adaptabilidad dinámica de temas y visualización compacta de métricas críticas.
 
@@ -38,7 +38,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 
 | Componente | Tecnología |
 | :--- | :--- |
-| **Backend Web** | PHP 8.3 (Apache, PDO SQLite, GD, OpenSSL, OpenSSH, SSHPass) |
+| **Backend Web** | PHP 8.4 (Apache, PDO SQLite, GD, OpenSSL, OpenSSH, SSHPass) |
 | **Terminal Daemon** | Go 1.26 (Gorilla WebSocket, Golang Crypto SSH, PTY) |
 | **Terminal Frontend** | Xterm.js 5.3 + Fit Addon 0.8 (100% local) |
 | **Base de Datos** | SQLite 3 |
@@ -72,7 +72,7 @@ Abrí el navegador e ingresá en:
 ## 📁 Estructura del Proyecto
 
 ```text
-├── Dockerfile                  # Imagen PHP 8.3 con Apache, OpenSSH, proxy WebSocket y WebTTY
+├── Dockerfile                  # Imagen PHP 8.4 con Apache, OpenSSH, proxy WebSocket y WebTTY
 ├── compose.yml                 # Definición del contenedor y volúmenes persistentes
 ├── entrypoint.sh               # Script supervisor que mantiene WebTTY 24/7 y Apache
 ├── README.md                   # Documentación oficial del proyecto

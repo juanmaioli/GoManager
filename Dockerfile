@@ -1,5 +1,5 @@
-# Dockerfile para PHP 8.3 con Apache y extensiones necesarias
-FROM php:8.3-apache
+# Dockerfile para PHP 8.4 con Apache y extensiones necesarias
+FROM php:8.4.27-apache
 
 # Instalamos dependencias del sistema y extensiones de PHP
 RUN apt-get update && apt-get install -y \
