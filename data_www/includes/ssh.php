@@ -22,8 +22,8 @@ function ejecutarSSH(array $servidor, ?string $comando = null, int $timeout = 6)
     $keyFile = null;
     $sshCmd = '';
 
-    // Opciones base de SSH seguras y sin prompts interactivos
-    $sshOpts = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout={$timeout} -o LogLevel=ERROR -p {$puerto}";
+    // Opciones base de SSH seguras y sin prompts interactivos, compatibles con servidores legados (RSA)
+    $sshOpts = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout={$timeout} -o LogLevel=ERROR -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa -p {$puerto}";
 
     if ($authTipo === 'key') {
         if (empty(trim($servidor['clave_privada'] ?? ''))) {
@@ -131,7 +131,7 @@ function ejecutarSCP(array $servidor, string $archivoLocal, string $destinoRemot
     $authTipo = $servidor['auth_tipo'] ?? 'password';
 
     $keyFile = null;
-    $scpOpts = "-P {$puerto} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout={$timeout} -o LogLevel=ERROR";
+    $scpOpts = "-P {$puerto} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout={$timeout} -o LogLevel=ERROR -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa";
 
     // Destino remoto en formato: usuario@host:/ruta
     $target = sprintf('%s@%s:%s', $servidor['usuario'], $servidor['host'], $destinoRemoto);

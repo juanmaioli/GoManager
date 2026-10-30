@@ -11,6 +11,7 @@ try {
     $pdo = new PDO('sqlite:' . $dbPath);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $pdo->exec("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
 
     // Inicializar tablas si no existen
     $pdo->exec("

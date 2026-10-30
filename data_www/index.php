@@ -57,6 +57,8 @@ foreach ($servidores as $srv) {
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            const savedView = localStorage.getItem('gomanager_vista') || 'tarjetas';
+            document.documentElement.setAttribute('data-vista-equipos', savedView);
         })();
     </script>
     <link href="./css/bootstrap.min.css" rel="stylesheet">
@@ -97,6 +99,54 @@ foreach ($servidores as $srv) {
             border-color: #dc3545 !important;
             box-shadow: 0 0 0 2px #dc3545, 0 8px 20px rgba(220, 53, 69, 0.25) !important;
         }
+
+        /* Estilos de Vista Tabla */
+        .table-servidores th {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            background-color: rgba(18, 20, 28, 0.65);
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        .sortable-th {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        .sortable-th:hover {
+            background-color: rgba(56, 189, 248, 0.12) !important;
+            color: #38bdf8 !important;
+        }
+        .sortable-th:focus-visible {
+            outline: 2px solid var(--focus-ring-color, #38bdf8);
+            outline-offset: -2px;
+        }
+        .sortable-th.active-sort {
+            color: #38bdf8 !important;
+        }
+        .table-servidores td {
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .table-servidores tbody tr {
+            transition: background-color 0.15s ease;
+        }
+        .table-servidores tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        /* Ocultamiento instantáneo según vista seleccionada para evitar parpadeos */
+        html[data-vista-equipos="tabla"] #gridServidores { display: none !important; }
+        html[data-vista-equipos="tabla"] #tablaServidoresContainer { display: block !important; }
+        html[data-vista-equipos="tabla"] #btnVistaTabla { background-color: #38bdf8; color: #0f172a !important; border-color: #38bdf8 !important; }
+        html[data-vista-equipos="tabla"] #btnVistaTarjetas { background-color: transparent; color: #94a3b8 !important; }
+
+        html[data-vista-equipos="tarjetas"] #gridServidores { display: flex !important; }
+        html[data-vista-equipos="tarjetas"] #tablaServidoresContainer { display: none !important; }
+        html[data-vista-equipos="tarjetas"] #btnVistaTarjetas { background-color: #38bdf8; color: #0f172a !important; border-color: #38bdf8 !important; }
+        html[data-vista-equipos="tarjetas"] #btnVistaTabla { background-color: transparent; color: #94a3b8 !important; }
     </style>
 </head>
 <body>
@@ -151,7 +201,17 @@ foreach ($servidores as $srv) {
                 <i class="fa-light fa-xmark me-1"></i>Ver todos
             </button>
         </div>
-        <div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <!-- Selector de Vista: Tarjetas / Tabla -->
+            <div class="btn-group shadow-sm" role="group" aria-label="Selector de visualización">
+                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2" id="btnVistaTarjetas" onclick="cambiarVista('tarjetas')" title="Ver en tarjetas" aria-pressed="true">
+                    <i class="fa-light fa-grid-2 me-1"></i>Tarjetas
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2" id="btnVistaTabla" onclick="cambiarVista('tabla')" title="Ver en tabla" aria-pressed="false">
+                    <i class="fa-light fa-table-list me-1"></i>Tabla
+                </button>
+            </div>
+
             <a href="config.php" class="btn btn-primary fw-bold btn-sm px-3 py-2">
                 <i class="fa-light fa-plus me-1"></i>Agregar Equipo
             </a>
@@ -250,16 +310,164 @@ foreach ($servidores as $srv) {
                     </div>
                 </div>
             <?php endforeach; ?>
-            <div id="noResultadosFiltro" class="col-12 text-center py-5 d-none">
-                <div class="card p-4 shadow-sm border-secondary mx-auto" style="max-width: 500px;">
-                    <div class="fs-1 mb-2 text-secondary"><i class="fa-light fa-filter-circle-xmark"></i></div>
-                    <h4 class="h5 text-light fw-bold">No hay servidores en esta categoría</h4>
-                    <p class="text-secondary mb-3">No se encontraron equipos que coincidan con el filtro seleccionado.</p>
-                    <div>
-                        <button type="button" class="btn btn-outline-info btn-sm fw-bold px-3 py-2" onclick="aplicarFiltro('todos')">
-                            <i class="fa-light fa-arrows-rotate me-1"></i>Mostrar todos los servidores
-                        </button>
-                    </div>
+        </div>
+
+        <!-- Vista en Tabla de Equipos -->
+        <div class="card shadow-sm border-secondary mb-4" id="tablaServidoresContainer">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-servidores">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="py-3 px-3 text-center sortable-th" data-col="estado" tabindex="0" role="button" aria-sort="none" title="Ordenar por Estado" style="width: 120px;">
+                                Estado <i class="fa-light fa-sort ms-1 sort-icon text-secondary"></i>
+                            </th>
+                            <th scope="col" class="py-3 px-3 sortable-th" data-col="nombre" tabindex="0" role="button" aria-sort="none" title="Ordenar por Nombre de Equipo">
+                                Equipo <i class="fa-light fa-sort ms-1 sort-icon text-secondary"></i>
+                            </th>
+                            <th scope="col" class="py-3 px-3 d-none d-md-table-cell sortable-th" data-col="so" tabindex="0" role="button" aria-sort="none" title="Ordenar por Sistema Operativo">
+                                SO / Distro <i class="fa-light fa-sort ms-1 sort-icon text-secondary"></i>
+                            </th>
+                            <th scope="col" class="py-3 px-3 sortable-th" data-col="cpu" tabindex="0" role="button" aria-sort="none" title="Ordenar por Uso de CPU" style="min-width: 150px;">
+                                CPU <i class="fa-light fa-sort ms-1 sort-icon text-secondary"></i>
+                            </th>
+                            <th scope="col" class="py-3 px-3 sortable-th" data-col="ram" tabindex="0" role="button" aria-sort="none" title="Ordenar por Uso de RAM" style="min-width: 160px;">
+                                RAM <i class="fa-light fa-sort ms-1 sort-icon text-secondary"></i>
+                            </th>
+                            <th scope="col" class="py-3 px-3 d-none d-lg-table-cell sortable-th" data-col="check" tabindex="0" role="button" aria-sort="none" title="Ordenar por Último Check">
+                                Último Check <i class="fa-light fa-sort ms-1 sort-icon text-secondary"></i>
+                            </th>
+                            <th scope="col" class="py-3 px-3 text-end" style="min-width: 140px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($servidores as $srv): 
+                            $data = !empty($srv['raw_json']) ? json_decode($srv['raw_json'], true) : null;
+                            $cpuVal = $data['cpu_usage'] ?? ($srv['cpu_usage'] ?? '0%');
+                            $ramVal = $data['ram_usage'] ?? ($srv['ram_usage'] ?? '0%');
+                            $cpuNum = (float)str_replace(['%', ' '], '', (string)$cpuVal);
+                            $ramNum = (float)str_replace(['%', ' '], '', (string)$ramVal);
+
+                            $estado = $srv['ultimo_estado'];
+                            $badgeClase = $estado === 'online' ? 'bg-success' : ($estado === 'error' ? 'bg-danger' : 'bg-secondary');
+                            $iconoEstado = $estado === 'online' ? 'fa-circle-check' : ($estado === 'error' ? 'fa-circle-exclamation' : 'fa-circle-question');
+                            $soNombre = $data['operating_system']['name'] ?? '';
+                            $iconoSO = iconoDistroSO($soNombre);
+                            $checkTimestamp = !empty($srv['ultimo_check']) ? strtotime($srv['ultimo_check']) : 0;
+                        ?>
+                            <tr class="server-row-item" id="row-srv-<?= $srv['id'] ?>" 
+                                data-estado="<?= e($estado) ?>" 
+                                data-nombre="<?= e(mb_strtolower($srv['nombre'])) ?>" 
+                                data-so="<?= e(mb_strtolower($soNombre ?: 'linux')) ?>" 
+                                data-cpu="<?= $cpuNum ?>" 
+                                data-ram="<?= $ramNum ?>" 
+                                data-check="<?= $checkTimestamp ?>">
+                                <!-- Estado -->
+                                <td class="text-center px-3">
+                                    <span class="badge <?= $badgeClase ?> px-2 py-1 fw-bold fs-7">
+                                        <i class="fa-light <?= $iconoEstado ?> me-1"></i><?= strtoupper(e($estado)) ?>
+                                    </span>
+                                </td>
+
+                                <!-- Equipo -->
+                                <td class="px-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-4 me-3 text-secondary text-center" style="width: 28px;" title="<?= e($soNombre ?: 'Linux') ?>">
+                                            <i class="<?= $iconoSO ?>"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold fs-6">
+                                                <a href="servidor.php?id=<?= $srv['id'] ?>" class="text-decoration-none text-light">
+                                                    <?= e($srv['nombre']) ?>
+                                                </a>
+                                            </div>
+                                            <div class="small text-secondary font-monospace">
+                                                <?= e($srv['host']) ?>:<?= e((string)$srv['puerto']) ?>
+                                                <?php if (!empty($data['ip_public_address'])): ?>
+                                                    <span class="ms-1 text-light-emphasis">• IP: <?= e($data['ip_public_address']) ?></span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- SO / Distro & Uptime -->
+                                <td class="px-3 d-none d-md-table-cell">
+                                    <div class="fw-semibold text-light small">
+                                        <?= e($soNombre ?: 'Linux / Desconocido') ?>
+                                        <?php if (!empty($data['operating_system']['version'])): ?>
+                                            <span class="text-secondary fw-normal">(<?= e($data['operating_system']['version']) ?>)</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="small text-secondary">
+                                        <i class="fa-light fa-clock-rotate-left me-1"></i>Uptime: <span class="text-light-emphasis fw-bold"><?= formatearUptime($srv['uptime'] ?? ($data['system_uptime'] ?? null)) ?></span>
+                                    </div>
+                                </td>
+
+                                <!-- CPU -->
+                                <td class="px-3">
+                                    <div class="d-flex justify-content-between align-items-center small fw-bold mb-1">
+                                        <span class="text-secondary"><i class="fa-light fa-microchip me-1"></i>CPU:</span>
+                                        <span class="text-<?= colorPorcentaje($cpuNum) ?>"><?= e((string)$cpuVal) ?></span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;" role="progressbar" aria-valuenow="<?= $cpuNum ?>" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar bg-<?= colorPorcentaje($cpuNum) ?>" style="width: <?= min(100, max(5, $cpuNum)) ?>%"></div>
+                                    </div>
+                                </td>
+
+                                <!-- RAM -->
+                                <td class="px-3">
+                                    <div class="d-flex justify-content-between align-items-center small fw-bold mb-1">
+                                        <span class="text-secondary"><i class="fa-light fa-memory me-1"></i>RAM:</span>
+                                        <div>
+                                            <span class="text-<?= colorPorcentaje($ramNum) ?>"><?= e((string)$ramVal) ?></span>
+                                            <?php if (!empty($data['RAM'])): ?>
+                                                <small class="text-secondary fw-normal ms-1">(<?= e($data['RAM']) ?>)</small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <div class="progress" style="height: 8px;" role="progressbar" aria-valuenow="<?= $ramNum ?>" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar bg-<?= colorPorcentaje($ramNum) ?>" style="width: <?= min(100, max(5, $ramNum)) ?>%"></div>
+                                    </div>
+                                </td>
+
+                                <!-- Último Check -->
+                                <td class="px-3 d-none d-lg-table-cell">
+                                    <div class="small text-secondary font-monospace">
+                                        <i class="fa-light fa-clock me-1"></i><?= formatearFechaLocal($srv['ultimo_check']) ?>
+                                    </div>
+                                </td>
+
+                                <!-- Acciones -->
+                                <td class="px-3 text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-dark border border-secondary text-light fw-bold" onclick="abrirTerminalSSH(<?= $srv['id'] ?>, '<?= e($srv['nombre']) ?>')" title="Terminal SSH" aria-label="Terminal SSH">
+                                            <i class="fa-light fa-terminal"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-info text-dark fw-bold" onclick="refrescarServidor(<?= $srv['id'] ?>, this)" title="Actualizar métricas" aria-label="Actualizar métricas">
+                                            <i class="fa-light fa-arrows-rotate"></i>
+                                        </button>
+                                        <a href="servidor.php?id=<?= $srv['id'] ?>" class="btn btn-primary fw-bold" title="Ver detalle del servidor" aria-label="Ver detalle del servidor">
+                                            <i class="fa-light fa-magnifying-glass"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mensaje de Sin Resultados por Filtro -->
+        <div id="noResultadosFiltro" class="text-center py-5 d-none">
+            <div class="card p-4 shadow-sm border-secondary mx-auto" style="max-width: 500px;">
+                <div class="fs-1 mb-2 text-secondary"><i class="fa-light fa-filter-circle-xmark"></i></div>
+                <h4 class="h5 text-light fw-bold">No hay servidores en esta categoría</h4>
+                <p class="text-secondary mb-3">No se encontraron equipos que coincidan con el filtro seleccionado.</p>
+                <div>
+                    <button type="button" class="btn btn-outline-info btn-sm fw-bold px-3 py-2" onclick="aplicarFiltro('todos')">
+                        <i class="fa-light fa-arrows-rotate me-1"></i>Mostrar todos los servidores
+                    </button>
                 </div>
             </div>
         </div>
@@ -301,6 +509,28 @@ function sincronizarTodos() {
     window.location.href = 'index.php?sync_all=1';
 }
 
+// Control de Vista: Tarjetas o Tabla
+function cambiarVista(vista) {
+    document.documentElement.setAttribute('data-vista-equipos', vista);
+    localStorage.setItem('gomanager_vista', vista);
+
+    const btnTarjetas = document.getElementById('btnVistaTarjetas');
+    const btnTabla = document.getElementById('btnVistaTabla');
+
+    if (btnTarjetas && btnTabla) {
+        if (vista === 'tabla') {
+            btnTabla.setAttribute('aria-pressed', 'true');
+            btnTarjetas.setAttribute('aria-pressed', 'false');
+        } else {
+            btnTarjetas.setAttribute('aria-pressed', 'true');
+            btnTabla.setAttribute('aria-pressed', 'false');
+        }
+    }
+
+    // Re-evaluar visibilidad si hay un filtro aplicado
+    aplicarFiltro(filtroActivo);
+}
+
 // Filtrado interactivo por tarjetas de métricas
 let filtroActivo = 'todos';
 
@@ -317,10 +547,11 @@ function aplicarFiltro(tipo) {
         card.setAttribute('aria-pressed', esActivo ? 'true' : 'false');
     });
 
-    const items = document.querySelectorAll('.server-card-item');
+    const cardItems = document.querySelectorAll('.server-card-item');
+    const rowItems = document.querySelectorAll('.server-row-item');
     let visibles = 0;
 
-    items.forEach(item => {
+    cardItems.forEach(item => {
         const estado = item.dataset.estado;
         let mostrar = false;
         if (tipo === 'todos') {
@@ -331,20 +562,38 @@ function aplicarFiltro(tipo) {
             mostrar = (estado !== 'online');
         }
 
-        if (mostrar) {
-            item.classList.remove('d-none');
-            visibles++;
-        } else {
-            item.classList.add('d-none');
+        item.classList.toggle('d-none', !mostrar);
+        if (mostrar) visibles++;
+    });
+
+    rowItems.forEach(item => {
+        const estado = item.dataset.estado;
+        let mostrar = false;
+        if (tipo === 'todos') {
+            mostrar = true;
+        } else if (tipo === 'online') {
+            mostrar = (estado === 'online');
+        } else if (tipo === 'alertas') {
+            mostrar = (estado !== 'online');
         }
+
+        item.classList.toggle('d-none', !mostrar);
     });
 
     const noResultados = document.getElementById('noResultadosFiltro');
+    const grid = document.getElementById('gridServidores');
+    const tabla = document.getElementById('tablaServidoresContainer');
+    const vistaActual = document.documentElement.getAttribute('data-vista-equipos') || 'tarjetas';
+
     if (noResultados) {
-        if (visibles === 0 && items.length > 0) {
+        if (visibles === 0 && cardItems.length > 0) {
             noResultados.classList.remove('d-none');
+            if (grid) grid.style.setProperty('display', 'none', 'important');
+            if (tabla) tabla.style.setProperty('display', 'none', 'important');
         } else {
             noResultados.classList.add('d-none');
+            if (grid) grid.style.removeProperty('display');
+            if (tabla) tabla.style.removeProperty('display');
         }
     }
 
@@ -368,7 +617,89 @@ function aplicarFiltro(tipo) {
     }
 }
 
+// Ordenamiento interactivo de la tabla de equipos
+let ordenColumna = localStorage.getItem('gomanager_orden_col') || 'nombre';
+let ordenDireccion = localStorage.getItem('gomanager_orden_dir') || 'asc';
+
+function ordenarTabla(columna, invertir = true) {
+    if (invertir) {
+        if (ordenColumna === columna) {
+            ordenDireccion = (ordenDireccion === 'asc') ? 'desc' : 'asc';
+        } else {
+            ordenColumna = columna;
+            ordenDireccion = (columna === 'cpu' || columna === 'ram' || columna === 'check') ? 'desc' : 'asc';
+        }
+    } else {
+        ordenColumna = columna;
+    }
+
+    const tbody = document.querySelector('#tablaServidoresContainer tbody');
+    if (!tbody) return;
+
+    const rows = Array.from(tbody.querySelectorAll('.server-row-item'));
+
+    rows.sort((a, b) => {
+        let valA = a.dataset[columna];
+        let valB = b.dataset[columna];
+
+        if (columna === 'cpu' || columna === 'ram' || columna === 'check') {
+            const numA = parseFloat(valA) || 0;
+            const numB = parseFloat(valB) || 0;
+            return ordenDireccion === 'asc' ? numA - numB : numB - numA;
+        }
+
+        valA = (valA || '').toString();
+        valB = (valB || '').toString();
+        const comparacion = valA.localeCompare(valB, 'es', { numeric: true, sensitivity: 'base' });
+        return ordenDireccion === 'asc' ? comparacion : -comparacion;
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
+
+    // Actualizar encabezados e indicadores visuales
+    document.querySelectorAll('.sortable-th').forEach(th => {
+        const thCol = th.dataset.col;
+        const icon = th.querySelector('.sort-icon');
+        if (thCol === columna) {
+            th.classList.add('active-sort');
+            th.setAttribute('aria-sort', ordenDireccion === 'asc' ? 'ascending' : 'descending');
+            if (icon) {
+                icon.className = `fa-light ${ordenDireccion === 'asc' ? 'fa-sort-up' : 'fa-sort-down'} ms-1 sort-icon text-info`;
+            }
+        } else {
+            th.classList.remove('active-sort');
+            th.setAttribute('aria-sort', 'none');
+            if (icon) {
+                icon.className = 'fa-light fa-sort ms-1 sort-icon text-secondary';
+            }
+        }
+    });
+
+    localStorage.setItem('gomanager_orden_col', ordenColumna);
+    localStorage.setItem('gomanager_orden_dir', ordenDireccion);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Restaurar vista seleccionada
+    const vistaGuardada = localStorage.getItem('gomanager_vista') || 'tarjetas';
+    cambiarVista(vistaGuardada);
+
+    // Event listeners para ordenamiento de tabla
+    document.querySelectorAll('.sortable-th').forEach(th => {
+        th.addEventListener('click', () => {
+            ordenarTabla(th.dataset.col, true);
+        });
+        th.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                ordenarTabla(th.dataset.col, true);
+            }
+        });
+    });
+
+    // Aplicar orden inicial a la tabla
+    ordenarTabla(ordenColumna, false);
+
     document.querySelectorAll('.metric-filter-card').forEach(card => {
         card.addEventListener('click', () => {
             aplicarFiltro(card.dataset.filtro);
