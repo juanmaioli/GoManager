@@ -197,11 +197,22 @@ foreach ($servidores as $srv) {
         <div class="d-flex align-items-center gap-2">
             <h2 class="h3 fw-bold text-light mb-0">Servidores Monitoreados</h2>
             <span id="filtroActualBadge" class="badge bg-secondary d-none"></span>
-            <button id="btnLimpiarFiltro" class="btn btn-sm btn-outline-secondary d-none py-0 px-2" onclick="aplicarFiltro('todos')" title="Quitar filtro">
+            <button id="btnLimpiarFiltro" class="btn btn-sm btn-outline-secondary d-none py-0 px-2" onclick="limpiarTodosFiltros()" title="Quitar filtros">
                 <i class="fa-light fa-xmark me-1"></i>Ver todos
             </button>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
+            <!-- Campo para filtrar por nombre de equipo -->
+            <div class="input-group input-group-sm" style="width: 250px;">
+                <span class="input-group-text bg-dark border-secondary text-secondary">
+                    <i class="fa-light fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="filtroNombreInput" class="form-control bg-dark border-secondary text-light" placeholder="Filtrar por nombre..." aria-label="Filtrar por nombre de equipo" autocomplete="off">
+                <button class="btn btn-outline-secondary d-none" type="button" id="btnLimpiarTexto" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">
+                    <i class="fa-light fa-xmark"></i>
+                </button>
+            </div>
+
             <!-- Selector de Vista: Tarjetas / Tabla -->
             <div class="btn-group shadow-sm" role="group" aria-label="Selector de visualización">
                 <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2" id="btnVistaTarjetas" onclick="cambiarVista('tarjetas')" title="Ver en tarjetas" aria-pressed="true">
@@ -211,10 +222,6 @@ foreach ($servidores as $srv) {
                     <i class="fa-light fa-table-list me-1"></i>Tabla
                 </button>
             </div>
-
-            <a href="config.php" class="btn btn-primary fw-bold btn-sm px-3 py-2">
-                <i class="fa-light fa-plus me-1"></i>Agregar Equipo
-            </a>
         </div>
     </div>
 
@@ -243,7 +250,10 @@ foreach ($servidores as $srv) {
                 $soNombre = $data['operating_system']['name'] ?? '';
                 $iconoSO = iconoDistroSO($soNombre);
             ?>
-                <div class="col-12 col-md-6 col-lg-4 col-xl-3 server-card-item" id="card-srv-<?= $srv['id'] ?>" data-estado="<?= e($estado) ?>">
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 server-card-item" id="card-srv-<?= $srv['id'] ?>" 
+                     data-estado="<?= e($estado) ?>"
+                     data-nombre="<?= e(mb_strtolower($srv['nombre'])) ?>"
+                     data-host="<?= e(mb_strtolower($srv['host'])) ?>">
                     <div class="card h-100 shadow-sm card-server">
                         <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
                             <div>
@@ -357,6 +367,7 @@ foreach ($servidores as $srv) {
                             <tr class="server-row-item" id="row-srv-<?= $srv['id'] ?>" 
                                 data-estado="<?= e($estado) ?>" 
                                 data-nombre="<?= e(mb_strtolower($srv['nombre'])) ?>" 
+                                data-host="<?= e(mb_strtolower($srv['host'])) ?>" 
                                 data-so="<?= e(mb_strtolower($soNombre ?: 'linux')) ?>" 
                                 data-cpu="<?= $cpuNum ?>" 
                                 data-ram="<?= $ramNum ?>" 
@@ -465,7 +476,7 @@ foreach ($servidores as $srv) {
                 <h4 class="h5 text-light fw-bold">No hay servidores en esta categoría</h4>
                 <p class="text-secondary mb-3">No se encontraron equipos que coincidan con el filtro seleccionado.</p>
                 <div>
-                    <button type="button" class="btn btn-outline-info btn-sm fw-bold px-3 py-2" onclick="aplicarFiltro('todos')">
+                    <button type="button" class="btn btn-outline-info btn-sm fw-bold px-3 py-2" onclick="limpiarTodosFiltros()">
                         <i class="fa-light fa-arrows-rotate me-1"></i>Mostrar todos los servidores
                     </button>
                 </div>
@@ -531,14 +542,19 @@ function cambiarVista(vista) {
     aplicarFiltro(filtroActivo);
 }
 
-// Filtrado interactivo por tarjetas de métricas
+// Filtrado interactivo por tarjetas de métricas y por nombre de equipo
 let filtroActivo = 'todos';
 
-function aplicarFiltro(tipo) {
-    if (filtroActivo === tipo && tipo !== 'todos') {
-        tipo = 'todos';
-    }
+function aplicarFiltro(tipo = filtroActivo) {
     filtroActivo = tipo;
+
+    const inputTexto = document.getElementById('filtroNombreInput');
+    const btnLimpiarTexto = document.getElementById('btnLimpiarTexto');
+    const texto = (inputTexto?.value || '').trim().toLowerCase();
+
+    if (btnLimpiarTexto) {
+        btnLimpiarTexto.classList.toggle('d-none', texto.length === 0);
+    }
 
     const cards = document.querySelectorAll('.metric-filter-card');
     cards.forEach(card => {
@@ -551,39 +567,36 @@ function aplicarFiltro(tipo) {
     const rowItems = document.querySelectorAll('.server-row-item');
     let visibles = 0;
 
-    cardItems.forEach(item => {
+    const cumpleFiltro = (item) => {
         const estado = item.dataset.estado;
-        let mostrar = false;
-        if (tipo === 'todos') {
-            mostrar = true;
-        } else if (tipo === 'online') {
-            mostrar = (estado === 'online');
-        } else if (tipo === 'alertas') {
-            mostrar = (estado !== 'online');
+        const nombre = item.dataset.nombre || '';
+        const host = item.dataset.host || '';
+
+        let matchEstado = true;
+        if (tipo === 'online') matchEstado = (estado === 'online');
+        else if (tipo === 'alertas') matchEstado = (estado !== 'online');
+
+        let matchTexto = true;
+        if (texto.length > 0) {
+            matchTexto = nombre.includes(texto) || host.includes(texto);
         }
 
+        const mostrar = matchEstado && matchTexto;
         item.classList.toggle('d-none', !mostrar);
-        if (mostrar) visibles++;
+        return mostrar;
+    };
+
+    cardItems.forEach(item => {
+        if (cumpleFiltro(item)) visibles++;
     });
 
     rowItems.forEach(item => {
-        const estado = item.dataset.estado;
-        let mostrar = false;
-        if (tipo === 'todos') {
-            mostrar = true;
-        } else if (tipo === 'online') {
-            mostrar = (estado === 'online');
-        } else if (tipo === 'alertas') {
-            mostrar = (estado !== 'online');
-        }
-
-        item.classList.toggle('d-none', !mostrar);
+        cumpleFiltro(item);
     });
 
     const noResultados = document.getElementById('noResultadosFiltro');
     const grid = document.getElementById('gridServidores');
     const tabla = document.getElementById('tablaServidoresContainer');
-    const vistaActual = document.documentElement.getAttribute('data-vista-equipos') || 'tarjetas';
 
     if (noResultados) {
         if (visibles === 0 && cardItems.length > 0) {
@@ -600,21 +613,38 @@ function aplicarFiltro(tipo) {
     const badge = document.getElementById('filtroActualBadge');
     const btnLimpiar = document.getElementById('btnLimpiarFiltro');
     if (badge && btnLimpiar) {
-        if (tipo === 'todos') {
+        const hayFiltroEstado = (tipo !== 'todos');
+        const hayFiltroTexto = (texto.length > 0);
+
+        if (!hayFiltroEstado && !hayFiltroTexto) {
             badge.classList.add('d-none');
             btnLimpiar.classList.add('d-none');
         } else {
             badge.classList.remove('d-none');
             btnLimpiar.classList.remove('d-none');
-            if (tipo === 'online') {
-                badge.className = 'badge bg-success';
-                badge.textContent = `Mostrando: Online (${visibles})`;
+
+            let etiqueta = '';
+            if (hayFiltroEstado && hayFiltroTexto) {
+                const nombreEstado = (tipo === 'online') ? 'Online' : 'Con Alertas';
+                badge.className = (tipo === 'online') ? 'badge bg-success' : 'badge bg-danger';
+                etiqueta = `${nombreEstado} + "${texto}" (${visibles})`;
+            } else if (hayFiltroEstado) {
+                badge.className = (tipo === 'online') ? 'badge bg-success' : 'badge bg-danger';
+                etiqueta = `${tipo === 'online' ? 'Online' : 'Con Alertas'} (${visibles})`;
             } else {
-                badge.className = 'badge bg-danger';
-                badge.textContent = `Mostrando: Con Alertas / Offline (${visibles})`;
+                badge.className = 'badge bg-info text-dark';
+                etiqueta = `"${texto}" (${visibles})`;
             }
+            badge.textContent = `Mostrando: ${etiqueta}`;
         }
     }
+}
+
+function limpiarTodosFiltros() {
+    const inputTexto = document.getElementById('filtroNombreInput');
+    if (inputTexto) inputTexto.value = '';
+    aplicarFiltro('todos');
+    inputTexto?.focus();
 }
 
 // Ordenamiento interactivo de la tabla de equipos
@@ -699,6 +729,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Aplicar orden inicial a la tabla
     ordenarTabla(ordenColumna, false);
+
+    // Buscador por nombre de equipo
+    const inputTexto = document.getElementById('filtroNombreInput');
+    const btnLimpiarTexto = document.getElementById('btnLimpiarTexto');
+
+    if (inputTexto) {
+        inputTexto.addEventListener('input', () => {
+            aplicarFiltro(filtroActivo);
+        });
+        inputTexto.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                inputTexto.value = '';
+                aplicarFiltro(filtroActivo);
+            }
+        });
+    }
+
+    if (btnLimpiarTexto) {
+        btnLimpiarTexto.addEventListener('click', () => {
+            if (inputTexto) inputTexto.value = '';
+            aplicarFiltro(filtroActivo);
+            inputTexto?.focus();
+        });
+    }
 
     document.querySelectorAll('.metric-filter-card').forEach(card => {
         card.addEventListener('click', () => {

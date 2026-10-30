@@ -14,6 +14,7 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 
 ## ✨ Características Principales
 
+- 🔍 **Buscador en Tiempo Real por Nombre y Host:** Campo de búsqueda interactivo en la cabecera del dashboard que filtra instantáneamente equipos a medida que se escribe (tanto en la vista de tarjetas como en tabla), combinable con los filtros de estado (Online/Offline), con botón de limpieza rápida y atajo de teclado <kbd>Escape</kbd>.
 - 🔀 **Vista Dual (Tarjetas y Tabla):** Selector superior dinámico para alternar instantáneamente entre la cuadrícula de tarjetas y un listado en tabla compacto de alta densidad, con persistencia automática en `localStorage` y renderizado anti-parpadeo (`data-vista-equipos`).
 - 🔃 **Ordenamiento Interactivo de Columnas:** En la vista de tabla, ordenamiento ascendente y descendente por todas las columnas de datos (Estado, Equipo, SO / Distro, CPU, RAM y Último Check), con indicadores visuales interactivos (`fa-sort`), navegación por teclado (<kbd>Enter</kbd> / <kbd>Espacio</kbd>), accesibilidad `aria-sort` y memoria de columna/dirección seleccionada.
 - 🎛️ **Filtrado Interactivo en Tiempo Real:** Las tarjetas de métricas globales del dashboard ("Total Equipos", "Online", "Con Alertas / Offline") funcionan como filtros dinámicos con un clic o teclado (`Enter`/`Espacio`), con sincronización simultánea en ambas vistas (tarjetas y tabla), resaltado visual de la categoría activa, contador de equipos visibles y botón de restablecimiento rápido.
