@@ -6,6 +6,13 @@ declare(strict_types=1);
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 $dbPath = __DIR__ . '/../db/database.sqlite';
+$dbExample = __DIR__ . '/../db/database.sqlite.example';
+
+// Si no existe la base de datos principal, clonar desde la plantilla de ejemplo
+if (!file_exists($dbPath) && file_exists($dbExample)) {
+    @copy($dbExample, $dbPath);
+    @chmod($dbPath, 0666);
+}
 
 try {
     $pdo = new PDO('sqlite:' . $dbPath);

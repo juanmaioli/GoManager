@@ -35,7 +35,8 @@ Diseñado con un enfoque prioritario en la **accesibilidad** y **alta legibilida
 - ⏱️ **Auto-chequeo Periódico desde la Web:** Selector configurable en la barra lateral (Desactivado, 1, 5, 10 y 15 min) con cuenta regresiva en vivo, persistencia en `localStorage`, pausa automática inteligente si la terminal SSH está abierta y botón de ejecución manual directa.
 - 🔄 **Sincronización Flexible:** Actualización en lote por AJAX (`api/sync_all.php`), individual bajo demanda y modo CLI (`sync_cli.php`) para tareas programadas (cron).
 - 🕒 **Normalización de Hora Local:** Conversión transparente de marcas temporales UTC de SQLite a hora oficial argentina (`America/Argentina/Buenos_Aires`) en dashboard, detalles y configuración.
-- 🗄️ **Base de Datos Embebida:** SQLite con esquema relacional auto-inicializable (`servidores`, `metricas`, `incidentes`) sin mantenimiento de servicios externos.
+- 🛡️ **Seguridad y Privacidad Garantizada:** Base de datos de producción (`database.sqlite`), credenciales SSH y archivos sensibles blindados en `.gitignore`, con provisión de plantilla demo inicial (`database.sqlite.example`) y esquema SQL (`schema.sql`) para despliegues limpios sin filtración de secretos.
+- 🗄️ **Base de Datos Embebida con Auto-Inicialización:** SQLite con esquema relacional (`servidores`, `metricas`, `incidentes`) y clonación automática de la plantilla de ejemplo al primer arranque sin mantenimiento de servicios externos.
 
 ---
 
@@ -115,7 +116,7 @@ Abrí el navegador e ingresá en:
     │   ├── ssh.php             # Conector SSH para ejecución remota y copia SCP
     │   ├── helpers.php         # Mapeo de logos de distro y funciones auxiliares
     │   └── navbar.php          # Menú lateral accesible con switch de tema
-    ├── db/                     # Almacenamiento protegido de database.sqlite
+    ├── db/                     # Estructura protegida (database.sqlite.example, schema.sql)
     └── clientes/               # Binarios compilados de gosvrinfo (amd64 / arm64)
 ```
 

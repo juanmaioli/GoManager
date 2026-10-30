@@ -2,6 +2,16 @@
 GEMINI.md
 .env
 data_www/.env
+
+# Base de datos SQLite y archivos de bloqueo/WAL
 *.sqlite
+*.sqlite-wal
+*.sqlite-shm
+database.sqlite
 data_www/db/*.sqlite
+data_www/db/database.sqlite
 data_db/
+
+# Excepciones: preservar plantillas y esquemas de ejemplo
+!data_www/db/database.sqlite.example
+!data_www/db/schema.sql
